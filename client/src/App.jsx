@@ -10,8 +10,7 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import UserDashboard from "./pages/User/UserDashboard";
 import SocietyLanding from "./pages/SocietyLanding";
 import AdminRoute from "./components/Admin/AdminRoute";
-// ✅ Removed: UserComplants import and /complaint route
-// Complaints are now handled inside UserDashboard via activeNav state
+
 
 function App() {
   return (

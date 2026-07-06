@@ -48,7 +48,7 @@ export default function MyDues({
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("http://localhost:3001/api/maintenance/my-dues", {
+      const res = await fetch("https://society-management-system-qcfx.onrender.com/api/maintenance/my-dues", {
         headers: authHeaders(),
       });
       if (!res.ok) {

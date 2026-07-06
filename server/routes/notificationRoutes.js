@@ -14,13 +14,13 @@ const { protect } = require("../middleware/authMiddleware");
 
 // Get all notifications of logged-in user
 router.get("/", protect, getNotifications);
-router.post("/", async (req, res) => {
-  const Notification = require("../models/Notification");
+// router.post("/", async (req, res) => {
+//   const Notification = require("../models/Notification");
 
-  const notification = await Notification.create(req.body);
+//   const notification = await Notification.create(req.body);
 
-  res.json(notification);
-});
+//   res.json(notification);
+// });
 // Get unread notifications
 router.get("/unread", protect, getUnreadNotifications);
 

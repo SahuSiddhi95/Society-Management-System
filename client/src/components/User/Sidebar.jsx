@@ -74,12 +74,12 @@ export default function Sidebar({
       ?.split(" ")
       .map((word) => word[0])
       .join("")
-      .toUpperCase()
+      .toUpperCase()    
       .slice(0, 2) || "U";
 
-  return (
+  return (      
     <aside className="w-60 bg-indigo-600 flex flex-col fixed inset-y-0 left-0 z-50 shadow-xl">
-      {/* Logo */}
+      {/* Logo */}    
       <div className="flex items-center gap-2.5 px-5 py-6 border-b border-white/10">
         <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center font-bold text-indigo-600 text-base shrink-0">
           S

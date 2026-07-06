@@ -55,7 +55,7 @@ export default function PaymentHistory({
       setError(null);
       try {
         const token = localStorage.getItem("token"); // adjust key if needed
-        const res = await fetch("http://localhost:3001/api/transactions/my-transactions", {
+        const res = await fetch("https://society-management-system-qcfx.onrender.com/api/transactions/my-transactions", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
