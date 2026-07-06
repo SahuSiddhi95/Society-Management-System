@@ -22,7 +22,7 @@ const ForgotPassword = () => {
       setLoading(true);
 
       const response = await axios.post(
-        "http://localhost:3001/api/auth/forgot-password",
+        "https://society-management-system-qcfx.onrender.com/api/auth/forgot-password",
         {
           email,
         }
