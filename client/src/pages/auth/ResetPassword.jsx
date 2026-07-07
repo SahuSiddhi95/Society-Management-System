@@ -78,7 +78,7 @@ const ResetPassword = () => {
     } catch (error) {
       toast.error(
         error.response?.data?.message || "Password reset failed"
-      );
+      );  
     } finally {
       setLoading(false);
     }
