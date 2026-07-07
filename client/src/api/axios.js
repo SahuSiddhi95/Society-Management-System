@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "https://society-management-system-qcfx.onrender.com/api",
+  baseURL: import.meta.env.VITE_API_URL || "https://society-management-system-qcfx.onrender.com/api",
 });
 
 // Add token automatically
@@ -14,7 +14,7 @@ API.interceptors.request.use(
     }
 
     return config;
-  },
+  },                        
   (error) => Promise.reject(error)
 );
 

@@ -1,9 +1,8 @@
 import { MdAdminPanelSettings } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axios from "axios";
 import toast from "react-hot-toast";
-
+import API from "../../api/axios";
 const ForgotPassword = () => {
   const navigate = useNavigate();
 
@@ -12,7 +11,8 @@ const ForgotPassword = () => {
 
   const handleForgotPassword = async (e) => {
     e.preventDefault();
-
+console.log("Forgot Password clicked");
+  console.log("Email:", email);
     if (!email) {
       toast.error("Please enter your email");
       return;
@@ -20,13 +20,10 @@ const ForgotPassword = () => {
 
     try {
       setLoading(true);
-
-      const response = await axios.post(
-        "https://society-management-system-qcfx.onrender.com/api/auth/forgot-password",
-        {
-          email,
-        }
-      );
+      
+      const response = await API.post("/auth/forgot-password", {
+        email,
+      });
 
       toast.success(response.data.message || "OTP sent successfully");
 
@@ -35,11 +32,10 @@ const ForgotPassword = () => {
         state: { email },
       });
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Something went wrong"
-      );
-    } finally {
-      setLoading(false);
+      console.log("Error:", error);
+      
+
+      toast.error(error.response?.data?.message || "Something went wrong");
     }
   };
 
@@ -89,9 +85,7 @@ const ForgotPassword = () => {
                 Shri Ram Residency
               </h1>
 
-              <p className="text-gray-400 text-xs">
-                Society Management System
-              </p>
+              <p className="text-gray-400 text-xs">Society Management System</p>
             </div>
           </div>
 
