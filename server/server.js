@@ -23,7 +23,6 @@ app.use(
     max: 100,
   })
 );
-
 // Routes
 app.use("/api/auth", require("./routes/authRoute"));
 app.use("/api/admin", require("./routes/adminRoutes"));
@@ -34,7 +33,6 @@ app.use("/api/payment", require("./routes/transactionRoutes"))
 app.use("/api/events", require("./routes/eventRoutes"));
 app.use("/api/notifications", require("./routes/notificationRoutes"));
 app.use("/api/maintenance", require("./routes/maintenanceRoutes"));
-
 app.use("/api/transactions", require("./routes/transactionRoutes"));
-
+app.use("/api", require("./routes/dashboardRoutes"));
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

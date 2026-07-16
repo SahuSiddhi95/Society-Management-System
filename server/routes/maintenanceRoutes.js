@@ -8,6 +8,7 @@ const {
   updateMaintenance,
   deleteMaintenance,
   generateDues,
+  getPaymentHistory
 } = require("../controllers/maintenanceController");
 
 const { protect } = require("../middleware/authMiddleware");
@@ -23,6 +24,6 @@ router.get("/my-dues", protect, getMyDues);
 router.put("/:id", protect, adminOnly, updateMaintenance);
 
 router.delete("/:id", protect, adminOnly, deleteMaintenance);
-
+router.get("/history", getPaymentHistory);
 router.post("/generate-dues", protect, adminOnly, generateDues);
 module.exports = router;

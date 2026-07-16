@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
+import toast from "react-hot-toast";
 import Sidebar from "../../components/User/Sidebar";
+import API from "../../api/axios";
 
 // ─── helpers ────────────────────────────────────────────────
 function formatDate(iso) {
@@ -20,13 +22,18 @@ function formatDueDate(iso) {
   });
 }
 
-function authHeaders() {
-  const token = localStorage.getItem("token"); // adjust key if needed
-  return {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
-}
+// Maintenance.status is ONLY ever "Pending" | "Paid" | "Overdue"
+const STATUS_BADGE = {
+  Paid: "bg-green-50 text-green-600",
+  Pending: "bg-amber-50 text-amber-600",
+  Overdue: "bg-red-50 text-red-600",
+};
+
+const STATUS_ICON = {
+  Paid: "✅",
+  Pending: "⏳",
+  Overdue: "⚠️",
+};
 
 // ─── component ──────────────────────────────────────────────
 export default function MyDues({
@@ -48,17 +55,10 @@ export default function MyDues({
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("https://society-management-system-qcfx.onrender.com/api/maintenance/my-dues", {
-        headers: authHeaders(),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.message || `Request failed (${res.status})`);
-      }
-      const data = await res.json();
-      setDues(data);
+      const { data } = await API.get("/maintenance/my-dues");
+      setDues(Array.isArray(data) ? data : []);
     } catch (err) {
-      setError(err.message);
+      setError(err?.response?.data?.message || err.message || "Failed to load dues");
     } finally {
       setLoading(false);
     }
@@ -73,28 +73,26 @@ export default function MyDues({
     setPayingId(maintenanceId);
     setPayError(null);
     try {
-      const res = await fetch("http://localhost:3001/api/transactions/pay", {
-        method: "POST",
-        headers: authHeaders(),
-        body: JSON.stringify({ maintenanceId }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.message || `Payment failed (${res.status})`);
-      }
-      // Refresh dues so UI reflects the new "paid" status
+      await API.post("/transactions/pay", { maintenanceId });
+
+      toast.success("Payment successful!");
+
+      // Refresh dues so UI reflects the new "Paid" status
       await fetchDues();
       if (fetchDashboardData) fetchDashboardData();
+      window.dispatchEvent(new CustomEvent("dues-updated"));
     } catch (err) {
-      setPayError(err.message);
+      const message = err?.response?.data?.message || err.message || "Payment failed";
+      setPayError(message);
+      toast.error(message);
     } finally {
       setPayingId(null);
     }
   };
 
   // ── derived stats ────────────────────────────────────────
-  const unpaid = dues.filter((d) => d.status === "unpaid");
-  const paid = dues.filter((d) => d.status === "paid");
+  const unpaid = dues.filter((d) => d.status !== "Paid");
+  const paid = dues.filter((d) => d.status === "Paid");
   const totalUnpaid = unpaid.reduce((s, d) => s + (d.amount || 0), 0);
   const totalPaid = paid.reduce((s, d) => s + (d.amount || 0), 0);
   const monthlyDue = dues[0]?.amount ?? 0;
@@ -191,14 +189,21 @@ export default function MyDues({
             </div>
           </div>
 
-          {/* ── Unpaid banner (first unpaid due) ── */}
+          {/* ── Unpaid banner (first unpaid/overdue due) ── */}
           {!loading && !error && unpaid.length > 0 && (
-            <div className="bg-white border border-amber-300 rounded-2xl p-6 flex items-center justify-between gap-6 shadow-sm">
+            <div
+              className={`bg-white border rounded-2xl p-6 flex items-center justify-between gap-6 shadow-sm ${
+                unpaid[0].status === "Overdue" ? "border-red-300" : "border-amber-300"
+              }`}
+            >
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-amber-500 text-xl">⚠️</span>
+                  <span className="text-amber-500 text-xl">
+                    {STATUS_ICON[unpaid[0].status] || "⚠️"}
+                  </span>
                   <h3 className="text-sm font-bold text-slate-800">
-                    {unpaid[0].month} — Payment Pending
+                    {unpaid[0].month} —{" "}
+                    {unpaid[0].status === "Overdue" ? "Payment Overdue" : "Payment Pending"}
                   </h3>
                 </div>
 
@@ -278,7 +283,7 @@ export default function MyDues({
             ) : (
               <div className="flex flex-col">
                 {dues.map((d, i) => {
-                  const isPaid = d.status === "paid";
+                  const isPaid = d.status === "Paid";
                   const isPaying = payingId === d._id;
 
                   return (
@@ -292,10 +297,14 @@ export default function MyDues({
                       <div className="flex items-center gap-4">
                         <div
                           className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${
-                            isPaid ? "bg-green-50" : "bg-amber-50"
+                            isPaid
+                              ? "bg-green-50"
+                              : d.status === "Overdue"
+                              ? "bg-red-50"
+                              : "bg-amber-50"
                           }`}
                         >
-                          {isPaid ? "✅" : "⏳"}
+                          {STATUS_ICON[d.status] || "⏳"}
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-slate-800">
@@ -317,12 +326,10 @@ export default function MyDues({
 
                         <span
                           className={`text-xs font-semibold px-3 py-1 rounded-full capitalize ${
-                            isPaid
-                              ? "bg-green-50 text-green-600"
-                              : "bg-amber-50 text-amber-600"
+                            STATUS_BADGE[d.status] || "bg-slate-100 text-slate-500"
                           }`}
                         >
-                          {isPaid ? "Paid" : "Unpaid"}
+                          {d.status}
                         </span>
 
                         {!isPaid && (

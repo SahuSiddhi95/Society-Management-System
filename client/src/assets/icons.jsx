@@ -18,6 +18,7 @@ const Icon = ({ name }) => {
     search: "🔍",
     bell: "🔔",
     settings: "⚙️",
+    menu: "☰", // Hamburger menu (mobile sidebar toggle)
 
     // Complaint Types
     water: "💧",

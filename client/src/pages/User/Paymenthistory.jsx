@@ -1,10 +1,18 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import toast from "react-hot-toast";
 import Sidebar from "../../components/User/Sidebar";
 import Icon from "../../assets/icons";
+import API from "../../api/axios";
 
 const CategoryBadge = {
   Maintenance: "bg-indigo-50 text-indigo-600",
   Event: "bg-purple-50 text-purple-600",
+};
+
+// Transaction.status is "Success" | "Failed"
+const StatusBadge = {
+  Success: "bg-green-50 text-green-600",
+  Failed: "bg-red-50 text-red-600",
 };
 
 // ─── helpers ────────────────────────────────────────────────
@@ -48,50 +56,38 @@ export default function PaymentHistory({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ── fetch transactions on mount ──────────────────────────
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const token = localStorage.getItem("token"); // adjust key if needed
-        const res = await fetch("https://society-management-system-qcfx.onrender.com/api/transactions/my-transactions", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
-          throw new Error(body.message || `Request failed (${res.status})`);
-        }
-
-        const data = await res.json();
-        setTransactions(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTransactions();
+  // ── fetch transactions ───────────────────────────────────
+  const fetchTransactions = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data } = await API.get("/transactions/my-transactions");
+      setTransactions(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err?.response?.data?.message || err.message || "Failed to load transactions");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    fetchTransactions();
+  }, [fetchTransactions]);
+
   // ── derived summary stats ────────────────────────────────
-  const totalPaid = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+  const successfulTxns = transactions.filter((t) => t.status === "Success");
+  const totalPaid = successfulTxns.reduce((sum, t) => sum + (t.amount || 0), 0);
   const lastTxn = transactions[0] ?? null;
 
   // ── download handler ─────────────────────────────────────
   const handleDownload = () => {
     if (!transactions.length) {
-      alert("No transactions to download.");
+      toast.error("No transactions to download.");
       return;
     }
 
     const rows = [
-      ["Description", "Transaction ID", "Category", "Date", "Amount", "Status"],
+      ["Description", "Transaction ID", "Category", "Date", "Amount", "Status", "Method"],
       ...transactions.map((t) => [
         t.description ?? "—",
         t.transactionId ?? "—",
@@ -99,6 +95,7 @@ export default function PaymentHistory({
         formatDate(t.createdAt),
         t.amount ?? 0,
         t.status ?? "—",
+        t.method ?? "—",
       ]),
     ];
 
@@ -113,6 +110,7 @@ export default function PaymentHistory({
     a.download = "payment-history.csv";
     a.click();
     URL.revokeObjectURL(url);
+    toast.success("Statement downloaded");
   };
 
   // ── render ───────────────────────────────────────────────
@@ -162,7 +160,9 @@ export default function PaymentHistory({
               <p className="text-3xl font-bold text-slate-800">
                 {loading ? "—" : transactions.length}
               </p>
-              <p className="text-xs text-indigo-600 font-medium mt-1">All successful</p>
+              <p className="text-xs text-indigo-600 font-medium mt-1">
+                {loading ? "" : `${successfulTxns.length} successful`}
+              </p>
             </div>
 
             <div className="bg-white border border-slate-200 rounded-2xl p-5">
@@ -187,10 +187,12 @@ export default function PaymentHistory({
             </div>
 
             {/* Header row */}
-            <div className="grid grid-cols-5 px-6 py-2 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <div className="grid grid-cols-7 px-6 py-2 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
               <span className="col-span-2">Description</span>
               <span>Category</span>
               <span>Date</span>
+              <span>Method</span>
+              <span>Status</span>
               <span className="text-right">Amount</span>
             </div>
 
@@ -198,7 +200,7 @@ export default function PaymentHistory({
             {loading ? (
               <div className="flex flex-col divide-y divide-slate-100">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="grid grid-cols-5 items-center px-6 py-4 animate-pulse">
+                  <div key={i} className="grid grid-cols-7 items-center px-6 py-4 animate-pulse">
                     <div className="col-span-2 flex items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-slate-200" />
                       <div className="flex flex-col gap-1.5">
@@ -208,6 +210,8 @@ export default function PaymentHistory({
                     </div>
                     <div className="h-5 w-20 bg-slate-100 rounded-full" />
                     <div className="h-3 w-20 bg-slate-100 rounded" />
+                    <div className="h-3 w-16 bg-slate-100 rounded" />
+                    <div className="h-5 w-16 bg-slate-100 rounded-full" />
                     <div className="h-3 w-16 bg-slate-100 rounded ml-auto" />
                   </div>
                 ))}
@@ -218,7 +222,7 @@ export default function PaymentHistory({
                 <p className="text-sm font-semibold text-slate-700">Failed to load transactions</p>
                 <p className="text-xs text-slate-400 max-w-xs">{error}</p>
                 <button
-                  onClick={() => window.location.reload()}
+                  onClick={fetchTransactions}
                   className="mt-2 text-xs text-indigo-600 hover:underline font-medium"
                 >
                   Try again
@@ -239,7 +243,7 @@ export default function PaymentHistory({
                   return (
                     <div
                       key={txn._id}
-                      className="grid grid-cols-5 items-center px-6 py-4 hover:bg-slate-50 transition-colors"
+                      className="grid grid-cols-7 items-center px-6 py-4 hover:bg-slate-50 transition-colors"
                     >
                       {/* Description */}
                       <div className="col-span-2 flex items-center gap-3">
@@ -268,6 +272,18 @@ export default function PaymentHistory({
                       {/* Date */}
                       <span className="text-sm text-slate-500">
                         {formatDate(txn.createdAt)}
+                      </span>
+
+                      {/* Method */}
+                      <span className="text-sm text-slate-500">{txn.method || "—"}</span>
+
+                      {/* Status */}
+                      <span
+                        className={`self-center text-[10px] font-bold px-2.5 py-1 rounded-full w-fit uppercase tracking-wide ${
+                          StatusBadge[txn.status] || "bg-slate-100 text-slate-500"
+                        }`}
+                      >
+                        {txn.status}
                       </span>
 
                       {/* Amount */}

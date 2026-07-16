@@ -10,7 +10,8 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import UserDashboard from "./pages/User/UserDashboard";
 import SocietyLanding from "./pages/SocietyLanding";
 import AdminRoute from "./components/Admin/AdminRoute";
-
+import { NotificationProvider } from "../context/Notificationcontext";
+// import NotificationPage from "./pages/admin/Notificationpage";
 
 function App() {
   return (
@@ -21,17 +22,23 @@ function App() {
         <Route path="/" element={<SocietyLanding />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/user-login" element={<UserLogin />} />
-        <Route path="/admin-dashboard" element={ 
-           <AdminRoute>
+       <Route
+  path="/admin-dashboard"
+  element={
+    <NotificationProvider>
+      <AdminRoute>
         <AdminDashboard />
-      </AdminRoute>} />
+      </AdminRoute>
+    </NotificationProvider>
+  }
+/>
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/user-dashboard" element={<UserDashboard />} />
-      </Routes>
+      </Routes> 
     </BrowserRouter>
   );
-}
+} 
 
 export default App;

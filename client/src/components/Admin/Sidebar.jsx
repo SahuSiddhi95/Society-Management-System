@@ -1,42 +1,90 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Icon from "./shared/Icon";
+import { useNotifications } from "../../../context/Notificationcontext";
 
 const icons = {
-  dashboard:   "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10",
-  residents:   "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75",
-  notice:      "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0",
-  complaint:   "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
-  maintenance: "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z",
-  events:      "M8 2v4 M16 2v4 M3 10h18 M5 22h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z",
-  payment:     "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8",
-  settings:    "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z",
+  dashboard: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10",
+  residents:
+    "M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75",
+  notice:
+    "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M8 13h8 M8 17h8 M8 9h2",
+  complaint: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z",
+  maintenance:
+    "M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z",
+  events:
+    "M8 2v4 M16 2v4 M3 10h18 M5 22h14a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z",
+  payment:
+    "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8",
+  settings:
+    "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z",
   // Feather "log-out" — door + arrow, combined into one path so it
   // works with this Icon component's single-`d` stroke rendering.
-  logout:      "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9",
+  logout: "M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9",
   // Feather "more-vertical" — three dots, used as the dropdown trigger
-  menu:        "M11,5 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0 M11,12 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0 M11,19 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0",
+  menu: "M11,5 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0 M11,12 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0 M11,19 a1,1 0 1,0 2,0 a1,1 0 1,0 -2,0",
+  // Bell — same path used by the Topbar notification bell, so both
+  // stay visually identical.
+  notification:
+    "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0",
 };
 
 const navItems = [
-  { label: "Dashboard",   icon: icons.dashboard,   key: "dashboard" },
-  { label: "Residents",   icon: icons.residents,   key: "Residents" },
-  { label: "Complaints",  icon: icons.complaint,   key: "Complaints",  badge: 3 },
-  { label: "Maintenance", icon: icons.maintenance, key: "maintenance", badge: 1 },
-  { label: "Events",      icon: icons.events,      key: "Events" },
-  { label: "Notices",     icon: icons.notice,      key: "notices",     badge: 3 },
+  {
+    label: "Dashboard",
+    icon: icons.dashboard,
+    path: "/admin",
+    badge: null,
+  },
+  {
+    label: "Residents",
+    icon: icons.residents,
+    path: "/admin/residents",
+  },
+  {
+    label: "Complaints",
+    icon: icons.complaint,
+    path: "/admin/complaints",
+    badge: 3,
+  },
+  {
+    label: "Maintenance",
+    icon: icons.maintenance,
+    path: "/admin/maintenance",
+    badge: 1,
+  },
+  {
+    label: "Events",
+    icon: icons.events,
+    path: "/admin/events",
+  },
+  {
+    label: "Notices",
+    icon: icons.notice,
+    path: "/admin/notices",
+  },
+  {
+    label: "Notifications",
+    icon: icons.notification,
+    path: "/admin/notifications",
+  },
 ];
 
 const finItems = [
-  { label: "Payment History", icon: icons.payment, key: "payment" },
+  {
+    label: "Payment History",
+    icon: icons.payment,
+    path: "/admin/payment-history",
+  },
 ];
-
-export default function Sidebar({ active, setActive, admin = {} }) {
+export default function Sidebar({ admin = {} }) {
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const ref = useRef(null);
+  const ref = useRef(null); 
   const navigate = useNavigate();
+  const location = useLocation();
+  const { unreadCount } = useNotifications();
 
   const adminName = admin?.name || "Admin";
   const societyName = admin?.society || "Shree Ram Residency";
@@ -101,42 +149,54 @@ export default function Sidebar({ active, setActive, admin = {} }) {
         <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold text-sm">
           S
         </div>
-        <span className="text-white font-bold text-lg tracking-tight">SocietyOS</span>
+        <span className="text-white font-bold text-lg tracking-tight">
+          SocietyOS
+        </span>
       </div>
 
       <nav className="flex-1 px-3">
         <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">
           Main
         </p>
-        {navItems.map((item) => (
-          <button
-            key={item.key}
-            onClick={() => setActive(item.key)}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl mb-1 text-sm font-medium transition-all
-              ${active === item.key ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}
-          >
-            <span className="flex items-center gap-3">
-              <Icon d={item.icon} size={16} color="currentColor" />
-              {item.label}
-            </span>
-            {item.badge && (
-              <span className="bg-orange-400 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                {item.badge}
+        {navItems.map((item) => {
+          // Notification badge is live (from context); everything else keeps its static count.
+          const badgeValue =
+            item.key === "notification" ? unreadCount : item.badge;
+
+          return (
+            <button
+              key={item.key}
+              onClick={() => navigate(item.path)}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl mb-1 text-sm font-medium transition-all
+                ${location.pathname === item.path ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}
+            > 
+              <span className="flex items-center gap-3">
+                <Icon d={item.icon} size={16} color="currentColor" />
+                {item.label}
               </span>
-            )}
-          </button>
-        ))}
+              {badgeValue > 0 && (
+                <span className="bg-orange-400 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                  {badgeValue > 9 ? "9+" : badgeValue}
+                </span>
+              )}
+            </button>
+          );
+        })}
 
         <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-5">
           Financials
         </p>
         {finItems.map((item) => (
-          <button
-            key={item.key}
-            onClick={() => setActive(item.key)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-sm font-medium transition-all
-              ${active === item.key ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}
-          >
+        <button
+  key={item.path}
+  onClick={() => navigate(item.path)}
+  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl mb-1 text-sm font-medium transition-all
+  ${    
+    location.pathname === item.path
+      ? "bg-white/15 text-white"
+      : "text-white/60 hover:text-white hover:bg-white/10"
+  }`}
+>
             <Icon d={item.icon} size={16} color="currentColor" />
             {item.label}
           </button>
@@ -208,7 +268,9 @@ export default function Sidebar({ active, setActive, admin = {} }) {
             {initials}
           </div>
           <div className="flex-1 min-w-0 text-left">
-            <p className="text-white text-xs font-semibold truncate">{adminName}</p>
+            <p className="text-white text-xs font-semibold truncate">
+              {adminName}
+            </p>
             <p className="text-white/40 text-[10px] truncate">{societyName}</p>
           </div>
           <span
@@ -244,7 +306,12 @@ export default function Sidebar({ active, setActive, admin = {} }) {
             }`}
           >
             <div className="w-11 h-11 rounded-full bg-red-50 flex items-center justify-center mb-4">
-              <Icon d={icons.logout} size={20} color="currentColor" className="text-red-500" />
+              <Icon
+                d={icons.logout}
+                size={20}
+                color="currentColor"
+                className="text-red-500"
+              />
             </div>
 
             <h2

@@ -142,6 +142,7 @@ export default function Complaints({
     <div className="flex min-h-screen bg-slate-50 font-sans">
       {/* Sidebar */}
       <Sidebar
+      
         activeNav={activeNav}
         setActiveNav={setActiveNav}
         user={user}

@@ -1,6 +1,8 @@
 import NotificationBell from "./NotificationBell";
 
 export default function Topbar({ user }) {
+     console.log("admin",user?.name); 
+
   // Dynamic Date
   const today = new Date().toLocaleDateString(
     "en-IN",
@@ -22,8 +24,7 @@ export default function Topbar({ user }) {
   } else if (hour < 18) {
     greeting = "Good Afternoon";
   }
-
-  // User Initials
+  // User Initials  
   const initials =
     user?.name
       ?.split(" ")
@@ -85,7 +86,7 @@ export default function Topbar({ user }) {
 
           {initials}
 
-        </div>
+        </div>    
 
       </div>
     </header>

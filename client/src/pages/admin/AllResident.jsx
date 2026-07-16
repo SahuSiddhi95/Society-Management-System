@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { createUser, getAllUsers } from "../../api/Admin/userApi";
+import Sidebar from "../../components/Admin/Sidebar";
+import Topbar from "../../components/Admin/Topbar";
 // ── mock API shim – replace with your real API calls ──────────────────────────
 // const mockResidents = [
 //   { id: 1, name: "Priya Sharma",    unit: "A-101", phone: "98765 43210", email: "priya@mail.com",   status: "active",  joinDate: "2023-01-15", avatar: "PS" },
@@ -31,7 +33,9 @@ const EMPTY_FORM = {
   flatType: "2BHK",
 };
 
-export default function Residents() {
+export default function Residents({  active,
+  setActive,
+  users,}) {
   const [residents, setResidents] = useState([]);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilter] = useState("all");
@@ -140,7 +144,25 @@ export default function Residents() {
     }`;
 
   return (
-    <div className="relative">
+      <div className="bg-gray-50 min-h-screen font-sans flex">
+    {/* Sidebar */}
+    <Sidebar
+      active={active}
+      setActive={setActive}
+    />
+
+    {/* Main */}
+    <div className="ml-56 flex-1 flex flex-col min-h-screen">
+      {/* Topbar */}
+      <Topbar
+        users={users}
+        setActive={setActive}
+      />
+
+      {/* Page Content */}
+      <main className="flex-1 p-6">
+
+    
       {/* ── Toast ─────────────────────────────────────────────────────────── */}
       {toast && (
         <div
@@ -669,6 +691,8 @@ export default function Residents() {
           </div>
         </div>
       )}
+    </main>
     </div>
-  );
+  </div>
+);
 }
