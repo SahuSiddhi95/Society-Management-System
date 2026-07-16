@@ -1,5 +1,11 @@
+// src/pages/admin/ComplaintManagement.jsx
+
 import { useState, useEffect, useCallback } from "react";
 import toast, { Toaster } from "react-hot-toast";
+
+// Layout
+import Sidebar from "../../components/Admin/Sidebar";
+import Topbar from "../../components/Admin/Topbar";
 
 // APIs
 import {
@@ -25,7 +31,11 @@ const DEFAULT_FILTERS = {
 
 const SEARCH_DEBOUNCE_MS = 350;
 
-export default function ComplaintManagement() {
+export default function ComplaintManagement({
+  active,
+  setActive,
+  users,
+}) {
   const [complaints, setComplaints] = useState([]);
   const [meta, setMeta] = useState({
     total: 0,
@@ -45,7 +55,9 @@ export default function ComplaintManagement() {
 
   const fetchComplaints = useCallback(
     async (showRefreshSpinner = false) => {
-      showRefreshSpinner ? setRefreshing(true) : setLoading(true);
+      showRefreshSpinner
+        ? setRefreshing(true)
+        : setLoading(true);
 
       try {
         const params = {
@@ -148,74 +160,97 @@ export default function ComplaintManagement() {
   };
 
   return (
-    <>
-      <Toaster position="top-right" />
+    <div className="bg-gray-50 min-h-screen font-sans flex">
+      {/* Sidebar */}
+      <Sidebar
+        active={active}
+        setActive={setActive}
+      />
 
-      <div className="mx-auto max-w-7xl space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">
-            Complaint Management
-          </h1>
-
-          <p className="mt-1 text-sm text-slate-500">
-            Review, track, and resolve resident complaints.
-          </p>
-        </div>
-
-        {/* Filters */}
-        <ComplaintFilters
-          filters={filters}
-          onChange={setFilters}
-          onRefresh={refreshAll}
-          refreshing={refreshing}
+      {/* Main */}
+      <div className="ml-56 flex-1 flex flex-col min-h-screen">
+        {/* Topbar */}
+        <Topbar
+          users={users}
+          setActive={setActive}
         />
 
-        {/* Table */}
-        <ComplaintTable
-          complaints={complaints}
-          loading={loading}
-          onView={setSelectedComplaint}
-          onDelete={setDeleteTarget}
-          onStatusChange={handleStatusChange}
-          statusUpdatingId={statusUpdatingId}
-        />
+        {/* Page Content */}
+        <main className="flex-1 p-6">
+          <Toaster position="top-right" />
 
-        {/* Pagination */}
-        <Pagination
-          page={filters.page}
-          pages={meta.pages}
-          total={meta.total}
-          onPageChange={(page) =>
-            setFilters((prev) => ({
-              ...prev,
-              page,
-            }))
-          }
-        />
+          <div className="mx-auto max-w-7xl space-y-6">
+            {/* Header */}
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">
+                Complaint Management
+              </h1>
+
+              <p className="mt-1 text-sm text-slate-500">
+                Review, track, and resolve resident complaints.
+              </p>
+            </div>
+
+            {/* Filters */}
+            <ComplaintFilters
+              filters={filters}
+              onChange={setFilters}
+              onRefresh={refreshAll}
+              refreshing={refreshing}
+            />
+
+            {/* Table */}
+            <ComplaintTable
+              complaints={complaints}
+              loading={loading}
+              onView={setSelectedComplaint}
+              onDelete={setDeleteTarget}
+              onStatusChange={handleStatusChange}
+              statusUpdatingId={statusUpdatingId}
+            />
+
+            {/* Pagination */}
+            <Pagination
+              page={filters.page}
+              pages={meta.pages}
+              total={meta.total}
+              onPageChange={(page) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  page,
+                }))
+              }
+            />
+          </div>
+
+          {/* Complaint Drawer */}
+          {selectedComplaint && (
+            <ComplaintDetailsDrawer
+              complaint={selectedComplaint}
+              onClose={() =>
+                setSelectedComplaint(null)
+              }
+              onStatusChange={handleStatusChange}
+              statusUpdating={
+                statusUpdatingId ===
+                selectedComplaint._id
+              }
+            />
+          )}
+
+          {/* Delete Modal */}
+          {deleteTarget && (
+            <DeleteConfirmModal
+              complaint={deleteTarget}
+              deleting={deleting}
+              onCancel={() =>
+                setDeleteTarget(null)
+              }
+              onConfirm={handleDeleteConfirm}
+            />
+          )}
+        </main>
       </div>
-
-      {/* Complaint Drawer */}
-      {selectedComplaint && (
-        <ComplaintDetailsDrawer
-          complaint={selectedComplaint}
-          onClose={() => setSelectedComplaint(null)}
-          onStatusChange={handleStatusChange}
-          statusUpdating={
-            statusUpdatingId === selectedComplaint._id
-          }
-        />
-      )}
-
-      {/* Delete Modal */}
-      {deleteTarget && (
-        <DeleteConfirmModal
-          complaint={deleteTarget}
-          deleting={deleting}
-          onCancel={() => setDeleteTarget(null)}
-          onConfirm={handleDeleteConfirm}
-        />
-      )}
-    </>
+    </div>
   );
 }

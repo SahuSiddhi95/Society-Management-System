@@ -20,17 +20,17 @@ const CATEGORIES = [
   "event",
 ];
 const CATEGORY_STYLES = {
-  Meeting: "bg-blue-50 text-blue-700 ring-blue-600/20",
-  Maintenance: "bg-orange-50 text-orange-700 ring-orange-600/20",
-  Update: "bg-green-50 text-green-700 ring-green-600/20",
-  Event: "bg-purple-50 text-purple-700 ring-purple-600/20",
+  meeting: "bg-blue-50 text-blue-700 ring-blue-600/20",
+  maintenance: "bg-orange-50 text-orange-700 ring-orange-600/20",
+  update: "bg-green-50 text-green-700 ring-green-600/20",
+  event: "bg-purple-50 text-purple-700 ring-purple-600/20",
 };
 
 const CATEGORY_DOT = {
-  Meeting: "bg-blue-500",
-  Maintenance: "bg-orange-500",
-  Update: "bg-green-500",
-  Event: "bg-purple-500",
+  meeting: "bg-blue-500",
+  maintenance: "bg-orange-500",
+  update: "bg-green-500",
+  event: "bg-purple-500",
 };
 
 /* ------------------------------------------------------------------ */
@@ -106,12 +106,21 @@ const createdByName = (createdBy) => {
 /*  Badge                                                               */
 /* ------------------------------------------------------------------ */
 
-function NoticeCategoryBadge(category) {
+function NoticeCategoryBadge({ category }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset whitespace-nowrap ${CATEGORY_STYLES[category] || "bg-gray-100 text-gray-700 ring-gray-600/20"}`}>
-      <span className={`h-1.5 w-1.5 rounded-full ${CATEGORY_DOT[category] || "bg-gray-400"}`} />
+    <span
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset whitespace-nowrap ${
+        CATEGORY_STYLES[category] ||
+        "bg-gray-100 text-gray-700 ring-gray-600/20"
+      }`}
+    >
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${
+          CATEGORY_DOT[category] || "bg-gray-400"
+        }`}
+      />
       {category}
-    </span>   
+    </span>
   );
 }
 
@@ -674,7 +683,7 @@ function NoticeDetailsDrawer({ open, onClose, notice, loading, onEdit, onDelete 
 /*  Main Page                                                           */
 /* ------------------------------------------------------------------ */
 
-export default function NoticeManagementPage({  active,
+export default function NoticeManagementPage({ category ,active,
   setActive,
   users, }) {
   const [notices, setNotices] = useState([]);
@@ -754,7 +763,6 @@ export default function NoticeManagementPage({  active,
       {/* Topbar */}
       <Topbar
         users={users}
-        active={active}
         setActive={setActive}
       />
 
