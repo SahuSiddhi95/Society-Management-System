@@ -21,7 +21,7 @@ exports.createNotice = async (req, res) => {
       title: "📢 New Notice",
       message: `${title} has been published.`,
       type: "notice",
-      recipient: user._id,
+      user: user._id,
       read: false,
     }));
 

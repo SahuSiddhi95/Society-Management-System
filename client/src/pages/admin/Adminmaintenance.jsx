@@ -37,7 +37,7 @@ const AdminMaintenance = ({ active, setActive, users }) => {
     } catch (err) {
       toast.error(
         err?.response?.data?.message ||
-          "Failed to load maintenance records"
+        "Failed to load maintenance records"
       );
     } finally {
       setLoading(false);

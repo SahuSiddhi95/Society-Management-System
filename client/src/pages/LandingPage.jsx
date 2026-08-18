@@ -9,7 +9,7 @@ const Icon = ({ d, size = 20 }) => (
     width={size}
     height={size}
     viewBox="0 0 24 24"
-    fill="none"     
+    fill="none"
     stroke="currentColor"
     strokeWidth={1.8}
     strokeLinecap="round"
@@ -149,15 +149,15 @@ function Hero() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
-         <button
-onClick={() => navigate("/user-login")}
-  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold px-7 py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md shadow-blue-100"
->
-  Start free trial <Icon d={Icons.arrow} size={16} />
-</button>
-          <button  className="w-full sm:w-auto bg-white text-gray-700 font-medium px-7 py-3.5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
-              onClick={() => window.open(demoVideo, "_blank")}
-  >
+          <button
+            onClick={() => navigate("/user-login")}
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold px-7 py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md shadow-blue-100"
+          >
+            Start free trial <Icon d={Icons.arrow} size={16} />
+          </button>
+          <button className="w-full sm:w-auto bg-white text-gray-700 font-medium px-7 py-3.5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
+            onClick={() => window.open(demoVideo, "_blank")}
+          >
             Watch demo
           </button>
         </div>
@@ -473,39 +473,39 @@ function Contact() {
   const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const response = await API.post("/contact", {
-      name: `${form.firstName} ${form.lastName}`,
-      email: form.email,
-      societyName: form.society,
-      message: form.message,
-    });
-
-    const data = response.data;
-
-    if (data.success) {
-      setSent(true);
-
-      // Reset Form
-      setForm({
-        firstName: "",
-        lastName: "",
-        email: "",
-        society: "",
-        message: "",
+    try {
+      const response = await API.post("/contact", {
+        name: `${form.firstName} ${form.lastName}`,
+        email: form.email,
+        societyName: form.society,
+        message: form.message,
       });
 
-      toast.success("Message sent successfully");
-    } else {
-      toast.error(data.message);
+      const data = response.data;
+
+      if (data.success) {
+        setSent(true);
+
+        // Reset Form
+        setForm({
+          firstName: "",
+          lastName: "",
+          email: "",
+          society: "",
+          message: "",
+        });
+
+        toast.success("Message sent successfully");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong");
     }
-  } catch (error) {
-    console.log(error);
-    toast.error("Something went wrong");
-  }
-};
+  };
 
   const contactDetails = [
     { icon: Icons.mail, label: "support@societyos.in" },

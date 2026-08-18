@@ -109,15 +109,13 @@ const createdByName = (createdBy) => {
 function NoticeCategoryBadge({ category }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset whitespace-nowrap ${
-        CATEGORY_STYLES[category] ||
+      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset whitespace-nowrap ${CATEGORY_STYLES[category] ||
         "bg-gray-100 text-gray-700 ring-gray-600/20"
-      }`}
+        }`}
     >
       <span
-        className={`h-1.5 w-1.5 rounded-full ${
-          CATEGORY_DOT[category] || "bg-gray-400"
-        }`}
+        className={`h-1.5 w-1.5 rounded-full ${CATEGORY_DOT[category] || "bg-gray-400"
+          }`}
       />
       {category}
     </span>
@@ -200,11 +198,10 @@ function SearchFilterBar({ filters, setFilters }) {
               <button
                 key={c}
                 onClick={() => setCategory(c)}
-                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ring-1 ring-inset ${
-                  filters.category === c
-                    ? "bg-indigo-600 text-white ring-indigo-600"
-                    : "bg-white text-gray-600 ring-gray-200 hover:bg-gray-50"
-                }`}
+                className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ring-1 ring-inset ${filters.category === c
+                  ? "bg-indigo-600 text-white ring-indigo-600"
+                  : "bg-white text-gray-600 ring-gray-200 hover:bg-gray-50"
+                  }`}
               >
                 {c}
               </button>
@@ -629,7 +626,7 @@ function DetailRow({ icon: Icon, label, value }) {
   );
 }
 
-function NoticeDetailsDrawer({ open, onClose, notice, loading, onEdit, onDelete ,}) {
+function NoticeDetailsDrawer({ open, onClose, notice, loading, onEdit, onDelete, }) {
   return (
     <div className={`fixed inset-0 z-50 ${open ? "" : "pointer-events-none"}`}>
       <div
@@ -683,7 +680,7 @@ function NoticeDetailsDrawer({ open, onClose, notice, loading, onEdit, onDelete 
 /*  Main Page                                                           */
 /* ------------------------------------------------------------------ */
 
-export default function NoticeManagementPage({ category ,active,
+export default function NoticeManagementPage({ category, active,
   setActive,
   users, }) {
   const [notices, setNotices] = useState([]);
@@ -751,88 +748,88 @@ export default function NoticeManagementPage({ category ,active,
   const isFiltering = filters.search || filters.category !== "All";
 
   return (
-  <div className="bg-gray-50 min-h-screen font-sans flex">
-    {/* Sidebar */}
-    <Sidebar
-      active={active}
-      setActive={setActive}
-    />
-
-    {/* Main */}
-    <div className="ml-56 flex-1 flex flex-col min-h-screen">
-      {/* Topbar */}
-      <Topbar
-        users={users}
+    <div className="bg-gray-50 min-h-screen font-sans flex">
+      {/* Sidebar */}
+      <Sidebar
+        active={active}
         setActive={setActive}
       />
 
-      {/* Page */}
-      <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 bg-gray-50/60">
-      <Toaster position="top-right" toastOptions={{
-        className: "rounded-2xl! shadow-lg! text-sm!",
-        success: { iconTheme: { primary: "#4f46e5", secondary: "#fff" } },
-      }} />
-
-      <div className="mx-auto max-w-7xl space-y-6">
-
-        {/* Header */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Notice Management</h1>
-            <p className="mt-1 text-sm text-gray-500">Create, publish, organize, and manage society notices to keep all residents informed.</p>
-          </div>
-          <button
-            onClick={() => setCreateOpen(true)}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-200 transition-all hover:bg-indigo-700 hover:shadow-md active:scale-[.98]"
-          >
-            <Plus className="h-4 w-4" /> Create Notice
-          </button>
-        </div>
-
-        {/* Stats */}
-        {loading ? (
-          <StatsSkeleton />
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <NoticeStatsCard icon={FileText} label="Total Notices" value={stats.total} accent="indigo" />
-            <NoticeStatsCard icon={Calendar} label="Published Today" value={stats.publishedToday} accent="green" />
-            <NoticeStatsCard icon={Tag} label="Categories" value={stats.categories} accent="purple" />
-            <NoticeStatsCard
-              icon={Megaphone}
-              label="Latest Notice"
-              value={stats.latest ? stats.latest.title : "—"}
-              sub={stats.latest ? fmtDate(stats.latest.createdAt) : undefined}
-              accent="orange"
-            />
-          </div>
-        )}
-
-        {/* Filters */}
-        <SearchFilterBar filters={filters} setFilters={setFilters} />
-
-        {/* Table / Empty / Loading */}
-        {loading ? (
-          <TableSkeleton />
-        ) : filteredNotices.length === 0 ? (
-          <EmptyState onCreate={() => setCreateOpen(true)} filtered={!!isFiltering} />
-        ) : (
-          <NoticeTable notices={filteredNotices} onView={openView} onEdit={openEdit} onDelete={openDelete} />
-        )}
-      </div>
-
-      {/* Modals & Drawer */}
-      <CreateNoticeModal open={createOpen} onClose={() => setCreateOpen(false)} onCreated={handleCreated} />
-      <EditNoticeModal open={editOpen} onClose={() => setEditOpen(false)} onUpdated={handleUpdated} notice={activeNotice} />
-      <DeleteNoticeModal open={deleteOpen} onClose={() => setDeleteOpen(false)} onDeleted={handleDeleted} notice={activeNotice} />
-        <NoticeDetailsDrawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          notice={activeNotice}
-          onEdit={openEdit}
-          onDelete={openDelete}
+      {/* Main */}
+      <div className="ml-56 flex-1 flex flex-col min-h-screen">
+        {/* Topbar */}
+        <Topbar
+          users={users}
+          setActive={setActive}
         />
-      </main>
+
+        {/* Page */}
+        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 bg-gray-50/60">
+          <Toaster position="top-right" toastOptions={{
+            className: "rounded-2xl! shadow-lg! text-sm!",
+            success: { iconTheme: { primary: "#4f46e5", secondary: "#fff" } },
+          }} />
+
+          <div className="mx-auto max-w-7xl space-y-6">
+
+            {/* Header */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Notice Management</h1>
+                <p className="mt-1 text-sm text-gray-500">Create, publish, organize, and manage society notices to keep all residents informed.</p>
+              </div>
+              <button
+                onClick={() => setCreateOpen(true)}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-200 transition-all hover:bg-indigo-700 hover:shadow-md active:scale-[.98]"
+              >
+                <Plus className="h-4 w-4" /> Create Notice
+              </button>
+            </div>
+
+            {/* Stats */}
+            {loading ? (
+              <StatsSkeleton />
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <NoticeStatsCard icon={FileText} label="Total Notices" value={stats.total} accent="indigo" />
+                <NoticeStatsCard icon={Calendar} label="Published Today" value={stats.publishedToday} accent="green" />
+                <NoticeStatsCard icon={Tag} label="Categories" value={stats.categories} accent="purple" />
+                <NoticeStatsCard
+                  icon={Megaphone}
+                  label="Latest Notice"
+                  value={stats.latest ? stats.latest.title : "—"}
+                  sub={stats.latest ? fmtDate(stats.latest.createdAt) : undefined}
+                  accent="orange"
+                />
+              </div>
+            )}
+
+            {/* Filters */}
+            <SearchFilterBar filters={filters} setFilters={setFilters} />
+
+            {/* Table / Empty / Loading */}
+            {loading ? (
+              <TableSkeleton />
+            ) : filteredNotices.length === 0 ? (
+              <EmptyState onCreate={() => setCreateOpen(true)} filtered={!!isFiltering} />
+            ) : (
+              <NoticeTable notices={filteredNotices} onView={openView} onEdit={openEdit} onDelete={openDelete} />
+            )}
+          </div>
+
+          {/* Modals & Drawer */}
+          <CreateNoticeModal open={createOpen} onClose={() => setCreateOpen(false)} onCreated={handleCreated} />
+          <EditNoticeModal open={editOpen} onClose={() => setEditOpen(false)} onUpdated={handleUpdated} notice={activeNotice} />
+          <DeleteNoticeModal open={deleteOpen} onClose={() => setDeleteOpen(false)} onDeleted={handleDeleted} notice={activeNotice} />
+          <NoticeDetailsDrawer
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            notice={activeNotice}
+            onEdit={openEdit}
+            onDelete={openDelete}
+          />
+        </main>
+      </div>
     </div>
-  </div>
-);
+  );
 }   

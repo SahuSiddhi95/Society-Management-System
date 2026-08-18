@@ -42,15 +42,13 @@ export default function RecentNotices({ setActiveNav, recentNotices = [] }) {
           return (
             <div
               key={n._id}
-              className={`flex items-start justify-between gap-3 py-3 ${
-                i < recentNotices.length - 1 ? "border-b border-slate-100" : ""
-              }`}
+              className={`flex items-start justify-between gap-3 py-3 ${i < recentNotices.length - 1 ? "border-b border-slate-100" : ""
+                }`}
             >
               <div className="flex gap-3 min-w-0">
                 <div
-                  className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${
-                    DotColor[n.dot] || "bg-indigo-500"
-                  }`}
+                  className={`w-2.5 h-2.5 rounded-full mt-1.5 shrink-0 ${DotColor[n.dot] || "bg-indigo-500"
+                    }`}
                 />
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-slate-700 leading-snug">
@@ -64,11 +62,10 @@ export default function RecentNotices({ setActiveNav, recentNotices = [] }) {
 
               {/* Right-side date badge */}
               <span
-                className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide shrink-0 ${
-                  isRecent
+                className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide shrink-0 ${isRecent
                     ? "bg-indigo-50 text-indigo-600"
                     : "bg-slate-100 text-slate-500"
-                }`}
+                  }`}
               >
                 {dateLabel}
               </span>

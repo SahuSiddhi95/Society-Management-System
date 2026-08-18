@@ -41,7 +41,7 @@ exports.createUser = async (req, res) => {
       name,
       email,
       password: hashed,
-        phone,
+      phone,
       role: role || "resident",
 
       // Flat Details
@@ -82,7 +82,7 @@ exports.createAdmin = async (req, res) => {
 
     // Check email
     const emailExists = await User.findOne({ email });
-          
+
     if (emailExists) {
       return res.status(400).json({
         message: "Email already exists",

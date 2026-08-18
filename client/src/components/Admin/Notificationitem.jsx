@@ -1,5 +1,5 @@
 import Icon from "./shared/Icon";
-import { useNotifications } from "../../../context/Notificationcontext";
+import useNotifications from "../../hooks/useNotifications";
 import { formatTimeAgo } from "./Timeago";
 
 const TYPE_ICON = {
@@ -21,8 +21,8 @@ const trashPath =
   "M3 6h18 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2 M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6";
 
 export default function NotificationItem({ notification }) {
-  const { markAsRead, removeNotification } = useNotifications();
-  const isRead = !!notification.isRead;
+  const { markAsRead, remove } = useNotifications();
+  const isRead = !!notification.read;
 
   return (
     <div
@@ -77,7 +77,7 @@ export default function NotificationItem({ notification }) {
           </button>
         )}
         <button
-          onClick={() => removeNotification(notification._id)}
+          onClick={() => remove(notification._id)}
           title="Delete"
           className="w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-red-50"
         >

@@ -1,5 +1,5 @@
 import NotificationItem from "./NotificationItem";
-import { useNotifications } from "../../../context/Notificationcontext";
+import useNotifications from "../../hooks/useNotifications";
 
 export default function NotificationDropdown({ onClose, onViewAll }) {
   const {
@@ -8,7 +8,7 @@ export default function NotificationDropdown({ onClose, onViewAll }) {
     loading,
     error,
     markAllAsRead,
-    fetchNotifications,
+    fetchAll,
   } = useNotifications();
 
   const recent = notifications.slice(0, 8);
@@ -52,7 +52,7 @@ export default function NotificationDropdown({ onClose, onViewAll }) {
             <span className="text-2xl">⚠️</span>
             <p className="text-xs text-gray-500">{error}</p>
             <button
-              onClick={fetchNotifications}
+              onClick={fetchAll}
               className="text-xs font-semibold text-indigo-600 hover:underline"
             >
               Retry

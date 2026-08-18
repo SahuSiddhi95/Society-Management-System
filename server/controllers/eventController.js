@@ -12,7 +12,7 @@ exports.createEvent = async (req, res) => {
         title: "📅 New Event",
         message: `${event.title} has been scheduled.`,
         type: "event",
-        recipient: user._id,
+        user: user._id,
       })),
     );
     res.status(201).json({

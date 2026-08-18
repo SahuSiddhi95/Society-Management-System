@@ -43,8 +43,8 @@ export default function MyComplaints({ complaints, setActiveNav }) {
             </div>
             <span
               className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                c.status === "Resolved" ? "bg-green-50 text-green-600"
-                : c.status === "Pending" ? "bg-yellow-50 text-yellow-600"
+                c.status?.toLowerCase() === "resolved" ? "bg-green-50 text-green-600"
+                : c.status?.toLowerCase() === "pending" ? "bg-amber-50 text-amber-600"
                 : "bg-red-50 text-red-500"
               }`}
             >

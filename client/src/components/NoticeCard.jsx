@@ -53,9 +53,8 @@ const NoticeCard = ({ recentNotices = [] }) => {
                     <h3 className="font-semibold text-lg">{n.title}</h3>
                     {n.category && (
                       <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shrink-0 ${
-                          CategoryBadge[n.category] || "bg-slate-800 text-slate-300"
-                        }`}
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shrink-0 ${CategoryBadge[n.category] || "bg-slate-800 text-slate-300"
+                          }`}
                       >
                         {n.category}
                       </span>
@@ -69,11 +68,10 @@ const NoticeCard = ({ recentNotices = [] }) => {
 
                 {/* Right-side date badge */}
                 <span
-                  className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide shrink-0 ${
-                    isRecent
+                  className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide shrink-0 ${isRecent
                       ? "bg-indigo-900/40 text-indigo-300"
                       : "bg-slate-800 text-slate-400"
-                  }`}
+                    }`}
                 >
                   {dateLabel}
                 </span>

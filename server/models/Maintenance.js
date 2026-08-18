@@ -19,6 +19,13 @@ const maintenanceSchema = new mongoose.Schema({
 
   paidAt: Date,
 
+  category: {
+    type: String,
+    default: "Maintenance",
+  },
+  
+  description: String,
+
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

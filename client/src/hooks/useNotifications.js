@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   getNotifications,
   getUnreadCount,
@@ -8,127 +8,148 @@ import {
   deleteAllNotifications as apiDeleteAllNotifications,
 } from "../api/notificationApi";
 
-/**
- * Single source of truth for notification data.
- * Shared by NotificationBell (badge + dropdown) and the full Notifications page,
- * so read/delete actions taken in one place stay consistent everywhere it's used.
- *
- * Pagination note: the API layer doesn't expose page/limit params, so this hook
- * fetches the full list once and lets consumers do client-side infinite reveal
- * via the useInfiniteReveal hook. If the backend later supports ?page=&limit=,
- * only fetchAll() needs to change.
- */
+// Global state variables
+let globalNotifications = [];
+let globalUnreadCount = 0;
+let globalLoading = false;
+let globalError = null;
+let globalFetchedOnce = false;
+
+// List of listeners (setState setters)
+const listeners = new Set();
+
+function emit() {
+  for (const listener of listeners) {
+    listener({
+      notifications: globalNotifications,
+      unreadCount: globalUnreadCount,
+      loading: globalLoading,
+      error: globalError,
+    });
+  }
+}
+
 export default function useNotifications() {
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const fetchedOnce = useRef(false);
+  const [state, setState] = useState({
+    notifications: globalNotifications,
+    unreadCount: globalUnreadCount,
+    loading: globalLoading,
+    error: globalError,
+  });
+
+  useEffect(() => {
+    listeners.add(setState);
+    return () => {
+      listeners.delete(setState);
+    };
+  }, []);
 
   const fetchAll = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    globalLoading = true;
+    globalError = null;
+    emit();
     try {
       const data = await getNotifications();
       const list = Array.isArray(data) ? data : data?.notifications || [];
-      setNotifications(list);
-      fetchedOnce.current = true;
+      globalNotifications = list;
+      globalFetchedOnce = true;
+      globalUnreadCount = list.filter((n) => !n.read).length;
     } catch (err) {
-      setError("Couldn't load notifications. Please try again.");
+      globalError = "Couldn't load notifications. Please try again.";
     } finally {
-      setLoading(false);
+      globalLoading = false;
+      emit();
     }
   }, []);
 
   const refreshUnreadCount = useCallback(async () => {
     try {
       const data = await getUnreadCount();
-      setUnreadCount(data?.count ?? data?.unreadCount ?? 0);
+      globalUnreadCount = data?.count ?? data?.unreadCount ?? 0;
+      emit();
     } catch (err) {
-      // Silent fail — the badge simply won't update this cycle.
+      // Silent fail
     }
   }, []);
 
-  // --- Optimistic UI updates below: state changes instantly, then the API
-  // call confirms it. On failure we roll back to the previous snapshot. ---
-
   const markAsRead = useCallback(async (id) => {
     let wasUnread = false;
-    setNotifications((prev) =>
-      prev.map((n) => {
-        if (n._id === id && !n.read) wasUnread = true;
-        return n._id === id ? { ...n, read: true } : n;
-      })
-    );
-    if (wasUnread) setUnreadCount((prev) => Math.max(0, prev - 1));
+    globalNotifications = globalNotifications.map((n) => {
+      if (n._id === id && !n.read) wasUnread = true;
+      return n._id === id ? { ...n, read: true } : n;
+    });
+    if (wasUnread) globalUnreadCount = Math.max(0, globalUnreadCount - 1);
+    emit();
 
     try {
       await apiMarkAsRead(id);
     } catch (err) {
-      setNotifications((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, read: false } : n))
+      globalNotifications = globalNotifications.map((n) =>
+        n._id === id ? { ...n, read: false } : n
       );
-      if (wasUnread) setUnreadCount((prev) => prev + 1);
+      if (wasUnread) globalUnreadCount += 1;
+      emit();
     }
   }, []);
 
   const markAllAsRead = useCallback(async () => {
-    let snapshot;
-    setNotifications((prev) => {
-      snapshot = prev;
-      return prev.map((n) => ({ ...n, read: true }));
-    });
-    const prevUnread = unreadCount;
-    setUnreadCount(0);
+    const snapshot = globalNotifications;
+    globalNotifications = globalNotifications.map((n) => ({ ...n, read: true }));
+    const prevUnread = globalUnreadCount;
+    globalUnreadCount = 0;
+    emit();
 
     try {
       await apiMarkAllRead();
     } catch (err) {
-      setNotifications(snapshot);
-      setUnreadCount(prevUnread);
+      globalNotifications = snapshot;
+      globalUnreadCount = prevUnread;
+      emit();
     }
-  }, [unreadCount]);
+  }, []);
 
   const remove = useCallback(async (id) => {
-    let snapshot;
-    let target;
-    setNotifications((prev) => {
-      snapshot = prev;
-      target = prev.find((n) => n._id === id);
-      return prev.filter((n) => n._id !== id);
-    });
-    if (target && !target.read) setUnreadCount((prev) => Math.max(0, prev - 1));
+    const snapshot = globalNotifications;
+    const target = globalNotifications.find((n) => n._id === id);
+    globalNotifications = globalNotifications.filter((n) => n._id !== id);
+    if (target && !target.read) globalUnreadCount = Math.max(0, globalUnreadCount - 1);
+    emit();
 
     try {
       await apiDeleteNotification(id);
     } catch (err) {
-      setNotifications(snapshot);
-      if (target && !target.read) setUnreadCount((prev) => prev + 1);
+      globalNotifications = snapshot;
+      if (target && !target.read) globalUnreadCount += 1;
+      emit();
     }
   }, []);
 
   const removeAll = useCallback(async () => {
-    let snapshot;
-    setNotifications((prev) => {
-      snapshot = prev;
-      return [];
-    });
-    const prevUnread = unreadCount;
-    setUnreadCount(0);
+    const snapshot = globalNotifications;
+    globalNotifications = [];
+    const prevUnread = globalUnreadCount;
+    globalUnreadCount = 0;
+    emit();
 
     try {
       await apiDeleteAllNotifications();
     } catch (err) {
-      setNotifications(snapshot);
-      setUnreadCount(prevUnread);
+      globalNotifications = snapshot;
+      globalUnreadCount = prevUnread;
+      emit();
     }
-  }, [unreadCount]);
+  }, []);
+
+  const fetchedOnce = useRef(globalFetchedOnce);
+  useEffect(() => {
+    fetchedOnce.current = globalFetchedOnce;
+  }, [state]);
 
   return {
-    notifications,
-    unreadCount,
-    loading,
-    error,
+    notifications: state.notifications,
+    unreadCount: state.unreadCount,
+    loading: state.loading,
+    error: state.error,
     fetchAll,
     refreshUnreadCount,
     markAsRead,

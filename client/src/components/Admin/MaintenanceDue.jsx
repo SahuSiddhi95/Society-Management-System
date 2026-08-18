@@ -10,8 +10,8 @@ export default function MaintenanceDue() {
         <div className="mt-4 space-y-2 text-sm">
           {[
             ["Maintenance Charge", "₹3,00,000"],
-            ["Water Charge",       "₹75,000"],
-            ["Parking Fee",        "₹50,000"],
+            ["Water Charge", "₹75,000"],
+            ["Parking Fee", "₹50,000"],
           ].map(([lbl, amt]) => (
             <div key={lbl} className="flex justify-between text-gray-600">
               <span>{lbl}</span>

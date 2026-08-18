@@ -4,33 +4,39 @@ const router = express.Router();
 const {
   getNotifications,
   getUnreadNotifications,
+  getUnreadCount,
   markAsRead,
   markAllAsRead,
   deleteNotification,
+  deleteAllNotifications,
 } = require("../controllers/notificationControllers");
 
 const { protect } = require("../middleware/authMiddleware");
 
-
-// Get all notifications of logged-in user
+// ── GET ─────────────────────────────────────────────────────────────────────
+// All notifications for the logged-in user
 router.get("/", protect, getNotifications);
-// router.post("/", async (req, res) => {
-//   const Notification = require("../models/Notification");
 
-//   const notification = await Notification.create(req.body);
-
-//   res.json(notification);
-// });
-// Get unread notifications
+// Unread notifications list
 router.get("/unread", protect, getUnreadNotifications);
 
-// Mark a notification as read
-router.put("/:id/read", protect, markAsRead);
+// Unread count (used by the bell badge in the Topbar)
+router.get("/unread-count", protect, getUnreadCount);
 
-// Mark all notifications as read
+// ── PUT ──────────────────────────────────────────────────────────────────────
+// Mark a single notification as read
+// NOTE: /read-all must come before /:id/read so Express doesn't mistake
+// "read-all" as an :id param.
 router.put("/read-all", protect, markAllAsRead);
 
-// Delete a notification
+// Mark one notification as read
+router.put("/:id/read", protect, markAsRead);
+
+// ── DELETE ───────────────────────────────────────────────────────────────────
+// Delete ALL notifications for the logged-in user  (must be before /:id)
+router.delete("/", protect, deleteAllNotifications);
+
+// Delete a single notification
 router.delete("/:id", protect, deleteNotification);
 
 module.exports = router;

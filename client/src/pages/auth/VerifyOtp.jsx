@@ -198,11 +198,10 @@ const VerifyOtp = () => {
             <button
               onClick={handleResend}
               disabled={timer > 0}
-              className={`text-xs transition ${
-                timer > 0
+              className={`text-xs transition ${timer > 0
                   ? "text-gray-600 cursor-not-allowed"
                   : "text-blue-400 hover:text-blue-300"
-              }`}
+                }`}
             >
               Resend OTP
             </button>

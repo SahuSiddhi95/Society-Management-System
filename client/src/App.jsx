@@ -22,23 +22,23 @@ function App() {
         <Route path="/" element={<SocietyLanding />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/user-login" element={<UserLogin />} />
-       <Route
-  path="/admin-dashboard"
-  element={
-    <NotificationProvider>
-      <AdminRoute>
-        <AdminDashboard />
-      </AdminRoute>
-    </NotificationProvider>
-  }
-/>
+        <Route
+          path="/admin-dashboard"
+          element={
+            <NotificationProvider>
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            </NotificationProvider>
+          }
+        />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/user-dashboard" element={<UserDashboard />} />
-      </Routes> 
+      </Routes>
     </BrowserRouter>
   );
-} 
+}
 
 export default App;

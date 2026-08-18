@@ -62,8 +62,8 @@ const MaintenanceTable = ({ maintenance, loading, onEdit, onRefresh }) => {
     return maintenance.filter((m) => {
       const matchesSearch =
         !search ||
-        m.resident?.toLowerCase().includes(search.toLowerCase()) ||
-        m.flat?.toLowerCase().includes(search.toLowerCase()) ||
+        m.resident?.name?.toLowerCase().includes(search.toLowerCase()) ||
+        m.resident?.flatNo?.toLowerCase().includes(search.toLowerCase()) ||
         m.month?.toLowerCase().includes(search.toLowerCase());
       const matchesMonth = monthFilter === "All" || m.month === monthFilter;
       const matchesYear = yearFilter === "All" || String(m.year) === String(yearFilter);

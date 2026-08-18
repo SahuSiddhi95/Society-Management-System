@@ -13,8 +13,26 @@ const UserLogin = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [adminContact, setAdminContact] = useState(null);
+  const [fetchingContact, setFetchingContact] = useState(false);
+
+  const handleOpenContactModal = async () => {
+    setShowContactModal(true);
+    setFetchingContact(true);
+    try {
+      const { data } = await API.get("/auth/admin-contact");
+      setAdminContact(data?.data || null);
+    } catch (err) {
+      setAdminContact(null);
+    } finally {
+      setFetchingContact(false);
+    }
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (loading) return;
     if (!email || !password) {
       toast.error("All fields are required");
       return;
@@ -22,10 +40,10 @@ const UserLogin = () => {
     try {
       setLoading(true);
       const res = await API.post("/auth/user-login", { email, password });
-      if (res.role === "admin") {
-      toast.error("Admins must use Admin Login");
-       return;
-}
+      if (res.data?.role === "admin") {
+        toast.error("Admins must use Admin Login");
+        return;
+      }
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.role);
       toast.success("Login successful");
@@ -222,7 +240,7 @@ const UserLogin = () => {
               New to SocietyOS?{" "}
               <button
                 type="button"
-                onClick={() => navigate("/contact-admin")}
+                onClick={handleOpenContactModal}
                 className="text-[#2c39f2] font-medium hover:underline"
               >
                 Contact your admin
@@ -231,6 +249,110 @@ const UserLogin = () => {
           </div>
         </div>
       </div>
+
+      {/* Contact Admin Modal */}
+      {showContactModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-xl ring-1 ring-black/5 animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 px-6 py-5 text-white flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-sm">Contact Admin</h3>
+                <p className="text-[10px] text-indigo-100 mt-0.5">Society Management System</p>
+              </div>
+              <button
+                onClick={() => setShowContactModal(false)}
+                className="text-white/80 hover:text-white text-sm"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6">
+              {fetchingContact ? (
+                <div className="flex flex-col items-center justify-center py-6 gap-2">
+                  <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                  <p className="text-xs text-slate-400">Loading details...</p>
+                </div>
+              ) : adminContact ? (
+                <div className="flex flex-col gap-4">
+                  {/* Name */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm shrink-0">
+                      👤
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase font-semibold tracking-wider text-slate-400">Admin Name</p>
+                      <p className="text-xs font-bold text-slate-800 truncate">{adminContact.name}</p>
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm shrink-0">
+                      ✉️
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase font-semibold tracking-wider text-slate-400">Email Address</p>
+                      <p className="text-xs font-bold text-slate-800 truncate">{adminContact.email}</p>
+                    </div>
+                  </div>
+
+                  {/* Phone */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm shrink-0">
+                      📞
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] uppercase font-semibold tracking-wider text-slate-400">Phone Number</p>
+                      <p className="text-xs font-bold text-slate-800 truncate">{adminContact.phone || "—"}</p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-slate-100">
+                    <a
+                      href={`mailto:${adminContact.email}`}
+                      className="flex items-center justify-center gap-2 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-semibold rounded-xl transition-all text-center"
+                    >
+                      ✉️ Send Email
+                    </a>
+                    {adminContact.phone ? (
+                      <a
+                        href={`tel:${adminContact.phone}`}
+                        className="flex items-center justify-center gap-2 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition-all text-center"
+                      >
+                        📞 Call Admin
+                      </a>
+                    ) : (
+                      <button
+                        disabled
+                        className="opacity-50 flex items-center justify-center gap-2 py-2.5 bg-slate-100 text-slate-400 text-xs font-semibold rounded-xl cursor-not-allowed text-center"
+                      >
+                        📞 Call Admin
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-6">
+                  <div className="text-2xl mb-2">⚠️</div>
+                  <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                    Admin contact details are currently unavailable. Please check with your society office.
+                  </p>
+                  <button
+                    onClick={() => setShowContactModal(false)}
+                    className="mt-4 px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-lg transition-all"
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

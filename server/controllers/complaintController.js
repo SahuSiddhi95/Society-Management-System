@@ -23,10 +23,9 @@ exports.createComplaint = async (req, res) => {
     await Notification.insertMany(
       admins.map((admin) => ({
         title: "New Complaint",
-        message: `${user.name} raised a complaint`,
+        message: `${req.user.name} raised a complaint`,
         type: "complaint",
-        recipient: admin._id,
-        role: "admin",
+        user: admin._id,
       })),
     );
 

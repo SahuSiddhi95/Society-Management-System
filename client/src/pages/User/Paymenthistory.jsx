@@ -9,10 +9,13 @@ const CategoryBadge = {
   Event: "bg-purple-50 text-purple-600",
 };
 
-// Transaction.status is "Success" | "Failed"
+// Transaction.status is "Success" | "Failed" | "paid" | "failed"
 const StatusBadge = {
   Success: "bg-green-50 text-green-600",
+  Paid: "bg-green-50 text-green-600",
+  paid: "bg-green-50 text-green-600",
   Failed: "bg-red-50 text-red-600",
+  failed: "bg-red-50 text-red-600",
 };
 
 // ─── helpers ────────────────────────────────────────────────
@@ -51,6 +54,9 @@ export default function PaymentHistory({
   complaints,
   fetchDashboardData,
   recentNotices,
+  events = [],
+  transactions: propTransactions = [],
+  dues = [],
 }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -75,7 +81,9 @@ export default function PaymentHistory({
   }, [fetchTransactions]);
 
   // ── derived summary stats ────────────────────────────────
-  const successfulTxns = transactions.filter((t) => t.status === "Success");
+  const successfulTxns = transactions.filter(
+    (t) => t.status === "Success" || t.status === "paid" || t.status === "Paid"
+  );
   const totalPaid = successfulTxns.reduce((sum, t) => sum + (t.amount || 0), 0);
   const lastTxn = transactions[0] ?? null;
 
@@ -123,6 +131,9 @@ export default function PaymentHistory({
         complaints={complaints}
         fetchDashboardData={fetchDashboardData}
         recentNotices={recentNotices}
+        events={events}
+        dues={dues}
+        transactions={transactions?.length > 0 ? transactions : propTransactions}
       />
 
       <div className="ml-60 flex-1 flex flex-col min-h-screen">
@@ -262,9 +273,8 @@ export default function PaymentHistory({
 
                       {/* Category */}
                       <span
-                        className={`self-center text-[10px] font-bold px-2.5 py-1 rounded-full w-fit uppercase tracking-wide ${
-                          CategoryBadge[category] || "bg-slate-100 text-slate-500"
-                        }`}
+                        className={`self-center text-[10px] font-bold px-2.5 py-1 rounded-full w-fit uppercase tracking-wide ${CategoryBadge[category] || "bg-slate-100 text-slate-500"
+                          }`}
                       >
                         {category}
                       </span>
@@ -279,9 +289,8 @@ export default function PaymentHistory({
 
                       {/* Status */}
                       <span
-                        className={`self-center text-[10px] font-bold px-2.5 py-1 rounded-full w-fit uppercase tracking-wide ${
-                          StatusBadge[txn.status] || "bg-slate-100 text-slate-500"
-                        }`}
+                        className={`self-center text-[10px] font-bold px-2.5 py-1 rounded-full w-fit uppercase tracking-wide ${StatusBadge[txn.status] || "bg-slate-100 text-slate-500"
+                          }`}
                       >
                         {txn.status}
                       </span>

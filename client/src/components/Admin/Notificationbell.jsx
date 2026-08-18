@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 // import { useNavigate } from "react-router-dom";
 import Icon from "./shared/Icon";
 import NotificationDropdown from "./Notificationdropdown";
-import { useNotifications } from "../../../context/Notificationcontext";
+import useNotifications from "../../hooks/useNotifications";
 
 const bellPath =
   "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0";
@@ -10,7 +10,7 @@ const bellPath =
 export default function NotificationBell({ setActive }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  const { unreadCount } = useNotifications(); 
+  const { unreadCount } = useNotifications();
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -48,19 +48,18 @@ export default function NotificationBell({ setActive }) {
           both open and close transition smoothly (same pattern as the
           Sidebar's profile dropdown). */}
       <div
-        className={`absolute right-0 top-full mt-2 origin-top-right transition-all duration-200 ease-out z-50 ${
-          open
+        className={`absolute right-0 top-full mt-2 origin-top-right transition-all duration-200 ease-out z-50 ${open
             ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
             : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
-        }`}
+          }`}
         aria-hidden={!open}
       >
         <NotificationDropdown
           onClose={() => setOpen(false)}
           onViewAll={() => {
-  setOpen(false);
-  setActive("notification");
-}}
+            setOpen(false);
+            setActive("notification");
+          }}
         />
       </div>
     </div>

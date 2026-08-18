@@ -16,6 +16,9 @@ export default function Complaints({
   complaints: dashboardComplaints = [],
   fetchDashboardData,
   recentNotices = [],
+  events = [],
+  dues = [],
+  transactions = [],
 }) {
   // States
   const [complaints, setComplaints] = useState([]);
@@ -142,13 +145,15 @@ export default function Complaints({
     <div className="flex min-h-screen bg-slate-50 font-sans">
       {/* Sidebar */}
       <Sidebar
-      
         activeNav={activeNav}
         setActiveNav={setActiveNav}
         user={user}
         complaints={dashboardComplaints}
         fetchDashboardData={fetchDashboardData}
         recentNotices={recentNotices}
+        events={events}
+        dues={dues}
+        transactions={transactions}
       />
 
       {/* Main */}
@@ -312,11 +317,10 @@ export default function Complaints({
                 {Object.entries(statusCounts).map(([status, count]) => (
                   <span
                     key={status}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      status.toLowerCase() === "resolved"
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${status.toLowerCase() === "resolved"
                         ? "bg-green-100 text-green-700"
                         : "bg-amber-100 text-amber-700"
-                    }`}
+                      }`}
                   >
                     {status} ({count})
                   </span>
@@ -338,11 +342,10 @@ export default function Complaints({
                 {complaints.map((c, i) => (
                   <div
                     key={c._id}
-                    className={`flex items-start gap-4 py-4 ${
-                      i < complaints.length - 1
+                    className={`flex items-start gap-4 py-4 ${i < complaints.length - 1
                         ? "border-b border-slate-100"
                         : ""
-                    }`}
+                      }`}
                   >
                     {/* Icon */}
                     <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-xl shrink-0">
@@ -376,7 +379,7 @@ export default function Complaints({
                       {/* Image */}
                       {c.image && (
                         <img
-                          src={`http://localhost:3001/${c.image}`}
+                          src={c.image}
                           alt="complaint"
                           className="w-20 h-20 object-cover rounded-xl mt-2 border border-slate-100"
                         />
@@ -385,13 +388,12 @@ export default function Complaints({
 
                     {/* Status */}
                     <span
-                      className={`text-xs font-semibold px-3 py-1 rounded-full shrink-0 ${
-                        c.status === "resolved"
+                      className={`text-xs font-semibold px-3 py-1 rounded-full shrink-0 ${c.status === "resolved"
                           ? "bg-green-50 text-green-600"
                           : c.status === "pending"
                             ? "bg-amber-50 text-amber-600"
                             : "bg-red-50 text-red-500"
-                      }`}
+                        }`}
                     >
                       {c.status || "Open"}
                     </span>

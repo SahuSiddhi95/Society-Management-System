@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../../components/User/Sidebar";
-import { getAllNotices ,getNoticeByCategory} from "../../api/noticeApi";
+import Topbar from "../../components/User/Topbar";
+import { getAllNotices, getNoticeByCategory } from "../../api/noticeApi";
 
 const DotColor = {
   blue: "bg-indigo-500",
@@ -21,6 +22,9 @@ export default function Notices({
   user,
   complaints = [],
   recentNotices = [],
+  events = [],
+  dues = [],
+  transactions = [],
 }) {
   const [expanded, setExpanded] = useState(null);
   const [filter, setFilter] = useState("All");
@@ -30,17 +34,17 @@ export default function Notices({
     const fetchNotices = async () => {
       try {
         const data = await getAllNotices();
-        setNotices(data);
+        setNotices(Array.isArray(data) ? data : []);
       } catch (error) {
         console.log(error);
-      } 
+      }
     };
 
     fetchNotices();
   }, []);
 
   const filtered = notices;
-  
+
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans">
       <Sidebar
@@ -49,23 +53,14 @@ export default function Notices({
         user={user}
         complaints={complaints}
         recentNotices={recentNotices}
+        events={events}
+        dues={dues}
+        transactions={transactions}
       />
 
       <div className="ml-60 flex-1 flex flex-col min-h-screen">
         {/* Topbar */}
-        <header className="bg-white border-b border-slate-200 px-8 h-16 flex items-center justify-between sticky top-0 z-40 shadow-sm">
-          <div>
-            <h1 className="text-lg font-bold text-slate-800">Notices</h1>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Shree Ram Residency · All announcements
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="bg-red-500 text-white text-xs font-semibold px-2.5 py-1 rounded-full">
-              2 New
-            </span>
-          </div>
-        </header>
+        <Topbar user={user} setActiveNav={setActiveNav} />
 
         <main className="p-8 flex flex-col gap-6">
           {/* Filter Tabs */}
@@ -74,25 +69,24 @@ export default function Notices({
               <button
                 key={cat}
                 onClick={async () => {
-  setFilter(cat);
+                  setFilter(cat);
 
-  try {
-    if (cat === "All") {
-      const data = await getAllNotices();
-      setNotices(data);
-    } else {
-      const data = await getNoticeByCategory(cat);
-      setNotices(data);
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}}
-                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                  filter === cat
-                    ? "bg-indigo-600 text-white shadow"
-                    : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-50"
-                }`}
+                  try {
+                    if (cat === "All") {
+                      const data = await getAllNotices();
+                      setNotices(data);
+                    } else {
+                      const data = await getNoticeByCategory(cat);
+                      setNotices(data);
+                    }
+                  } catch (error) {
+                    console.log(error);
+                  }
+                }}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all ${filter === cat
+                  ? "bg-indigo-600 text-white shadow"
+                  : "bg-white border border-slate-200 text-slate-500 hover:bg-slate-50"
+                  }`}
               >
                 {cat}
               </button>
@@ -104,11 +98,10 @@ export default function Notices({
             {filtered.map((n) => (
               <div
                 key={n._id}
-                className={`bg-white border rounded-2xl overflow-hidden transition-all ${
-                  expanded === n._id
-                    ? "border-indigo-300 shadow-md"
-                    : "border-slate-200 hover:shadow-sm"
-                }`}
+                className={`bg-white border rounded-2xl overflow-hidden transition-all ${expanded === n._id
+                  ? "border-indigo-300 shadow-md"
+                  : "border-slate-200 hover:shadow-sm"
+                  }`}
               >
                 <button
                   className="w-full text-left px-6 py-4 flex items-start gap-4"

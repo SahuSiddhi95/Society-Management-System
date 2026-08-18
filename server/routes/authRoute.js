@@ -9,7 +9,8 @@ const {
   getUserDetails,
   adminLogin,
   userLogin,
-  logout
+  logout,
+  getAdminContact
 } = require("../controllers/authControllers");
 const { protect } = require("../middleware/authMiddleware");
 const router = express.Router();
@@ -24,5 +25,6 @@ router.post("/verify-otp", verifyOtp);
 router.post("/resend-otp", resendOtp);
 router.post("/reset-password", resetPassword);
 router.post("/logout", logout);
+router.get("/admin-contact", getAdminContact);
 
 module.exports = router;

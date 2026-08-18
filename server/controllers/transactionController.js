@@ -15,14 +15,14 @@
           });
         }
 
-        maintenance.status = "paid";
+        maintenance.status = "Paid";
         maintenance.paidAt = new Date();
 
         await maintenance.save();
 
         const transaction =
           await Transaction.create({
-            user: maintenance.user,
+            user: req.user._id,
             maintenance: maintenance._id,
             amount: maintenance.amount,
             transactionId:

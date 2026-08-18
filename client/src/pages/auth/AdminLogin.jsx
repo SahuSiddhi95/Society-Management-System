@@ -14,10 +14,11 @@ const AdminLogin = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
- 
+
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (loading) return;
     try {
       setLoading(true);
       const { data } = await API.post("/auth/admin-login", formData);
@@ -28,7 +29,7 @@ const AdminLogin = () => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.role);
       toast.success("Admin login successful");
-     navigate("/admin-dashboard", { replace: true });
+      navigate("/admin-dashboard", { replace: true });
     } catch (error) {
       if (error.response?.data?.message === "Invalid email") {
         toast.error("Email does not exist");
@@ -204,35 +205,7 @@ const AdminLogin = () => {
             >
               {loading ? "Signing in..." : "Sign in as Admin"}
             </button>
-
-            {/* Divider */}
-            <div className="flex items-center gap-2">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-[10px] text-gray-400">or continue with</span>
-              <div className="flex-1 h-px bg-gray-200" />
-            </div>
-
-            {/* Google */}
-            <button
-              type="button"
-              className="w-full py-2.5 border border-gray-200 hover:bg-gray-50 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-2 transition-colors"
-            >
-              <FaGoogle size={12} color="#EA4335" />
-              Sign in with Google
-            </button>
           </form>
-
-          {/* Footer */}
-          <p className="mt-4 text-[11px] text-gray-400 text-center">
-            New to SocietyOS?{" "}
-            <button
-              type="button"
-              onClick={() => navigate("/contact-admin")}
-              className="text-[#2c39f2] font-medium hover:underline"
-            >
-              Contact your admin
-            </button>
-          </p>
         </div>
       </div>
     </div>

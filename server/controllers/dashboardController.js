@@ -10,14 +10,14 @@ exports.getDashboardStats = async (req, res) => {
       role: "user",
     });
 
-    // Flats
-    const totalFlats = await User.countDocuments({
-      role: "user",
-    });
+    // Flats — count distinct flatNo values assigned to residents
+    const flatNoList = await User.distinct("flatNo", { role: "user" });
+    const totalFlats = flatNoList.length;
 
     // Payment History (latest 5 payments)
+    // NOTE: enum in Maintenance model uses "Paid" (capital P) — must match exactly
     const paymentHistory = await Maintenance.find({
-      status: "paid",
+      status: "Paid",
     })
       .populate("resident", "name flatNo")
       .sort({ updatedAt: -1 })

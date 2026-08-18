@@ -25,8 +25,7 @@ const MONTH_NAMES = [
 
 const ROWS_PER_PAGE = 8;
 
-const PaymentHistory = ({active,
-  setActive}) => {
+const PaymentHistory = ({ active, setActive, users }) => {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -65,7 +64,7 @@ const PaymentHistory = ({active,
       console.error("Error fetching payment history:", err);
       setError(
         err?.response?.data?.message ||
-          "Failed to load payment history. Please try again."
+        "Failed to load payment history. Please try again."
       );
     } finally {
       setLoading(false);
@@ -202,26 +201,31 @@ const PaymentHistory = ({active,
   const handlePrint = () => window.print();
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar active={active}
-      setActive={setActive}/>
-      <div className="flex-1  flex flex-col lg:ml-64">
-        <Topbar active={active}
-          setActive={setActive}/>  
+    <div className="bg-gray-50 min-h-screen font-sans flex">
+      {/* Sidebar */}
+      <Sidebar active={active} setActive={setActive} />
 
-        <main className="flex-1 p-4 sm:p-6 space-y-6">
+      {/* Main */}
+      <div className="ml-56 flex-1 flex flex-col min-h-screen">
+        {/* Topbar */}
+        <Topbar users={users} setActive={setActive} />
+
+        {/* Page Content */}
+        <main className="flex-1 p-6">
           {/* Page Header */}
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
-              Payment History
-            </h1>
-            <p className="text-sm sm:text-base text-gray-500 mt-1">
-              View all successful maintenance payments made by residents.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800 tracking-tight">
+                Payment History
+              </h1>
+              <p className="text-sm text-gray-500 mt-0.5">
+                View all successful maintenance payments made by residents.
+              </p>
+            </div>
           </div>
 
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
             <SummaryCard
               icon={<Receipt className="w-6 h-6 text-blue-600" />}
               iconBg="bg-blue-100"
@@ -229,14 +233,14 @@ const PaymentHistory = ({active,
               value={loading ? "—" : stats.totalTransactions}
             />
             <SummaryCard
-              icon={<Wallet className="w-6 h-6 text-green-600" />}
-              iconBg="bg-green-100"
+              icon={<Wallet className="w-6 h-6 text-emerald-600" />}
+              iconBg="bg-emerald-100"
               label="Total Amount Collected"
               value={loading ? "—" : formatCurrency(stats.totalAmount)}
             />
             <SummaryCard
-              icon={<CalendarCheck className="w-6 h-6 text-purple-600" />}
-              iconBg="bg-purple-100"
+              icon={<CalendarCheck className="w-6 h-6 text-indigo-600" />}
+              iconBg="bg-indigo-100"
               label="Payments This Month"
               value={loading ? "—" : stats.paymentsThisMonthCount}
             />
@@ -249,10 +253,10 @@ const PaymentHistory = ({active,
           </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 space-y-4">
-            <h2 className="text-lg font-semibold text-gray-800">Search & Filters</h2>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6 space-y-4 mb-6">
+            <h2 className="text-base font-bold text-gray-800">Search & Filters</h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -260,7 +264,7 @@ const PaymentHistory = ({active,
                   placeholder="Resident Name"
                   value={searchName}
                   onChange={(e) => setSearchName(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 bg-white rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition text-gray-700"
                 />
               </div>
 
@@ -271,14 +275,14 @@ const PaymentHistory = ({active,
                   placeholder="Flat Number"
                   value={searchFlat}
                   onChange={(e) => setSearchFlat(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                  className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-200 bg-white rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition text-gray-700"
                 />
               </div>
 
               <select
                 value={filterMonth}
                 onChange={(e) => setFilterMonth(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white"
+                className="w-full px-3 py-2.5 text-sm border border-gray-200 bg-white rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition text-gray-700"
               >
                 <option value="">All Months</option>
                 {MONTH_NAMES.map((name, idx) => (
@@ -291,7 +295,7 @@ const PaymentHistory = ({active,
               <select
                 value={filterYear}
                 onChange={(e) => setFilterYear(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition bg-white"
+                className="w-full px-3 py-2.5 text-sm border border-gray-200 bg-white rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition text-gray-700"
               >
                 <option value="">All Years</option>
                 {availableYears.map((year) => (
@@ -305,21 +309,21 @@ const PaymentHistory = ({active,
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full px-3 py-2.5 text-sm border border-gray-200 bg-white rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition text-gray-700"
               />
 
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full px-3 py-2.5 text-sm border border-gray-200 bg-white rounded-xl outline-none focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 transition text-gray-700"
               />
             </div>
 
             <div className="flex justify-end">
               <button
                 onClick={resetFilters}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-sm font-medium text-gray-600 transition"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-sm font-semibold text-gray-600 transition"
               >
                 <RotateCcw className="w-4 h-4" />
                 Reset Filters
@@ -328,9 +332,9 @@ const PaymentHistory = ({active,
           </div>
 
           {/* Table Card */}
-          <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-            <div className="px-4 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-800">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div className="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <h2 className="text-base font-bold text-gray-800">
                 Payment Records
                 {!loading && (
                   <span className="ml-2 text-sm font-normal text-gray-400">
@@ -349,15 +353,15 @@ const PaymentHistory = ({active,
             ) : (
               <>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead className="bg-gray-50 sticky top-0 z-10">
-                      <tr className="text-left text-gray-500 uppercase text-xs tracking-wider">
-                        <th className="px-4 sm:px-6 py-3 font-semibold whitespace-nowrap">Resident Name</th>
-                        <th className="px-4 sm:px-6 py-3 font-semibold whitespace-nowrap">Flat No.</th>
-                        <th className="px-4 sm:px-6 py-3 font-semibold whitespace-nowrap">Amount Paid</th>
-                        <th className="px-4 sm:px-6 py-3 font-semibold whitespace-nowrap">Month</th>
-                        <th className="px-4 sm:px-6 py-3 font-semibold whitespace-nowrap">Year</th>
-                        <th className="px-4 sm:px-6 py-3 font-semibold whitespace-nowrap">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-gray-100 bg-gray-50/70 text-left text-gray-500 uppercase text-xs tracking-wide">
+                        <th className="px-5 sm:px-6 py-3.5 font-semibold whitespace-nowrap">Resident Name</th>
+                        <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Flat No.</th>
+                        <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Amount Paid</th>
+                        <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Month</th>
+                        <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Year</th>
+                        <th className="px-4 py-3.5 font-semibold whitespace-nowrap">
                           <button
                             onClick={toggleSort}
                             className="flex items-center gap-1 hover:text-gray-700 transition"
@@ -366,51 +370,49 @@ const PaymentHistory = ({active,
                             <ArrowUpDown className="w-3.5 h-3.5" />
                           </button>
                         </th>
-                        <th className="px-4 sm:px-6 py-3 font-semibold whitespace-nowrap">Status</th>
-                        <th className="px-4 sm:px-6 py-3 font-semibold whitespace-nowrap">Method</th>
-                        <th className="px-4 sm:px-6 py-3 font-semibold whitespace-nowrap">Receipt No.</th>
-                        <th className="px-4 sm:px-6 py-3 font-semibold whitespace-nowrap text-right">Actions</th>
+                        <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Status</th>
+                        <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Method</th>
+                        <th className="px-4 py-3.5 font-semibold whitespace-nowrap">Receipt No.</th>
+                        <th className="px-4 py-3.5 font-semibold whitespace-nowrap text-right">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody>
                       {paginatedPayments.map((payment, idx) => (
                         <tr
                           key={payment._id || idx}
-                          className={`transition-colors hover:bg-blue-50/50 ${
-                            idx % 2 === 0 ? "bg-white" : "bg-gray-50/40"
-                          }`}
+                          className="border-b border-gray-50 hover:bg-indigo-50/30 transition-colors"
                         >
-                          <td className="px-4 sm:px-6 py-3.5 font-medium text-gray-800 whitespace-nowrap">
+                          <td className="px-5 sm:px-6 py-3.5 font-semibold text-gray-800 whitespace-nowrap">
                             {payment?.resident?.name || "—"}
                           </td>
-                          <td className="px-4 sm:px-6 py-3.5 text-gray-600 whitespace-nowrap">
+                          <td className="px-4 py-3.5 text-gray-600 font-mono text-xs whitespace-nowrap">
                             {payment?.resident?.flatNo || "—"}
                           </td>
-                          <td className="px-4 sm:px-6 py-3.5 font-semibold text-gray-800 whitespace-nowrap">
+                          <td className="px-4 py-3.5 font-semibold text-gray-800 whitespace-nowrap">
                             {formatCurrency(payment.amount)}
                           </td>
-                          <td className="px-4 sm:px-6 py-3.5 text-gray-600 whitespace-nowrap">
+                          <td className="px-4 py-3.5 text-gray-600 whitespace-nowrap">
                             {monthLabel(payment.month)}
                           </td>
-                          <td className="px-4 sm:px-6 py-3.5 text-gray-600 whitespace-nowrap">
+                          <td className="px-4 py-3.5 text-gray-600 whitespace-nowrap">
                             {payment.year || "—"}
                           </td>
-                          <td className="px-4 sm:px-6 py-3.5 text-gray-600 whitespace-nowrap">
+                          <td className="px-4 py-3.5 text-gray-500 text-xs whitespace-nowrap">
                             {formatDate(payment.paymentDate)}
                           </td>
-                          <td className="px-4 sm:px-6 py-3.5 whitespace-nowrap">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                          <td className="px-4 py-3.5 whitespace-nowrap">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
                               Paid
                             </span>
                           </td>
-                          <td className="px-4 sm:px-6 py-3.5 text-gray-600 whitespace-nowrap">
+                          <td className="px-4 py-3.5 text-gray-600 whitespace-nowrap">
                             {payment.paymentMethod || "—"}
                           </td>
-                          <td className="px-4 sm:px-6 py-3.5 text-gray-600 whitespace-nowrap">
+                          <td className="px-4 py-3.5 text-gray-600 whitespace-nowrap">
                             {payment.receiptNumber || "—"}
                           </td>
-                          <td className="px-4 sm:px-6 py-3.5">
-                            <div className="flex items-center justify-end gap-2">
+                          <td className="px-4 py-3.5">
+                            <div className="flex items-center justify-end gap-1">
                               <ActionButton
                                 title="View Details"
                                 onClick={() => setSelectedPayment(payment)}
@@ -437,18 +439,18 @@ const PaymentHistory = ({active,
                 </div>
 
                 {/* Pagination */}
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-4 border-t border-gray-100">
-                  <p className="text-xs sm:text-sm text-gray-500">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 sm:px-6 py-4 border-t border-gray-100">
+                  <p className="text-xs text-gray-500">
                     Showing{" "}
-                    <span className="font-medium text-gray-700">
+                    <span className="font-semibold text-gray-700">
                       {(currentPage - 1) * ROWS_PER_PAGE + 1}
                     </span>{" "}
                     -{" "}
-                    <span className="font-medium text-gray-700">
+                    <span className="font-semibold text-gray-700">
                       {Math.min(currentPage * ROWS_PER_PAGE, filteredPayments.length)}
                     </span>{" "}
                     of{" "}
-                    <span className="font-medium text-gray-700">
+                    <span className="font-semibold text-gray-700">
                       {filteredPayments.length}
                     </span>{" "}
                     records
@@ -497,13 +499,13 @@ const PaymentHistory = ({active,
 // ---------------- Sub Components ----------------
 
 const SummaryCard = ({ icon, iconBg, label, value }) => (
-  <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 flex items-center gap-4 hover:shadow-md transition-shadow duration-200">
+  <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4 hover:shadow-md transition-shadow duration-200">
     <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${iconBg} shrink-0`}>
       {icon}
     </div>
     <div className="min-w-0">
-      <p className="text-xs sm:text-sm text-gray-500 truncate">{label}</p>
-      <p className="text-xl sm:text-2xl font-bold text-gray-800 truncate">{value}</p>
+      <p className="text-xs text-gray-500 truncate">{label}</p>
+      <p className="text-xl font-bold text-gray-800 truncate">{value}</p>
     </div>
   </div>
 );
@@ -512,14 +514,14 @@ const ActionButton = ({ children, title, onClick }) => (
   <button
     onClick={onClick}
     title={title}
-    className="p-2 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+    className="p-2 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
   >
     {children}
   </button>
 );
 
 const TableSkeleton = () => (
-  <div className="p-4 sm:p-6 space-y-3">
+  <div className="p-5 sm:p-6 space-y-3">
     {Array.from({ length: 6 }).map((_, i) => (
       <div
         key={i}
@@ -531,27 +533,25 @@ const TableSkeleton = () => (
 );
 
 const EmptyState = () => (
-  <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-    <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-      <Receipt className="w-8 h-8 text-gray-400" />
-    </div>
-    <h3 className="text-lg font-semibold text-gray-700">No Payment History Found</h3>
-    <p className="text-sm text-gray-500 mt-1 max-w-sm">
+  <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+    <Receipt className="w-12 h-12 mb-3 opacity-40" />
+    <p className="text-sm font-medium text-gray-600">No Payment History Found</p>
+    <p className="text-xs mt-1 max-w-sm text-center">
       Residents who successfully pay their maintenance bills will appear here.
     </p>
   </div>
 );
 
 const ErrorState = ({ message, onRetry }) => (
-  <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+  <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
     <div className="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center mb-4">
       <X className="w-8 h-8 text-red-400" />
     </div>
-    <h3 className="text-lg font-semibold text-gray-700">Something went wrong</h3>
+    <h3 className="text-sm font-semibold text-gray-700">Something went wrong</h3>
     <p className="text-sm text-gray-500 mt-1 max-w-sm">{message}</p>
     <button
       onClick={onRetry}
-      className="mt-4 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium transition"
+      className="mt-4 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition"
     >
       Try Again
     </button>
@@ -559,18 +559,26 @@ const ErrorState = ({ message, onRetry }) => (
 );
 
 const PaymentDetailsModal = ({ payment, onClose, formatCurrency, formatDate, monthLabel }) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative animate-[fadeIn_0.15s_ease-out]">
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-4 p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition"
-      >
-        <X className="w-5 h-5" />
-      </button>
+  <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
+    <div
+      className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+      onClick={onClose}
+    />
+    <div className="relative z-50 bg-white rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
+      <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100">
+        <div>
+          <h2 className="text-lg font-bold text-gray-800">Payment Details</h2>
+          <p className="text-xs text-gray-400 mt-0.5">Transaction summary</p>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
 
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">Payment Details</h3>
-
-      <div className="space-y-3 text-sm">
+      <div className="px-6 py-5 space-y-3">
         <DetailRow label="Resident Name" value={payment?.resident?.name} />
         <DetailRow label="Flat Number" value={payment?.resident?.flatNo} />
         <DetailRow label="Email" value={payment?.resident?.email} />
@@ -580,21 +588,30 @@ const PaymentDetailsModal = ({ payment, onClose, formatCurrency, formatDate, mon
         <DetailRow label="Payment Date" value={formatDate(payment.paymentDate)} />
         <DetailRow label="Payment Method" value={payment.paymentMethod || "—"} />
         <DetailRow label="Receipt Number" value={payment.receiptNumber || "—"} />
-        <div className="flex items-center justify-between pt-1">
-          <span className="text-gray-500">Status</span>
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+        <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+          <span className="text-xs font-semibold text-gray-400">Status</span>
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
             Paid
           </span>
         </div>
+      </div>
+
+      <div className="px-6 pb-5">
+        <button
+          onClick={onClose}
+          className="w-full py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+        >
+          Close
+        </button>
       </div>
     </div>
   </div>
 );
 
 const DetailRow = ({ label, value }) => (
-  <div className="flex items-center justify-between">
-    <span className="text-gray-500">{label}</span>
-    <span className="font-medium text-gray-800 text-right">{value || "—"}</span>
+  <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
+    <span className="text-xs font-semibold text-gray-400">{label}</span>
+    <span className="text-sm font-medium text-gray-700 text-right">{value || "—"}</span>
   </div>
 );
 

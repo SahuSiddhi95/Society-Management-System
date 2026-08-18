@@ -18,7 +18,11 @@ export default function Notifications({ activeNav,
   user,
   complaints: dashboardComplaints = [],
   fetchDashboardData,
-  recentNotices = [], }) {
+  recentNotices = [],
+  events = [],
+  dues = [],
+  transactions = [],
+}) {
   const navigate = useNavigate();
   const [filter, setFilter] = useState("all");
   // null | { type: "deleteAll" } | { type: "deleteOne", id }
@@ -69,24 +73,27 @@ export default function Notifications({ activeNav,
 
   return (
     <div className="flex min-h-screen bg-slate-50">
-      <Sidebar 
-      activeNav={activeNav}
+      <Sidebar
+        activeNav={activeNav}
         setActiveNav={setActiveNav}
         user={user}
         complaints={dashboardComplaints}
         fetchDashboardData={fetchDashboardData}
         recentNotices={recentNotices}
+        events={events}
+        dues={dues}
+        transactions={transactions}
       />
 
       <div className="ml-60 flex-1 flex flex-col min-h-screen">
-<header className="bg-white border-b border-slate-200 px-8 h-16 flex items-center justify-between sticky top-0 z-40 shadow-sm">
-  <div>
-    <h1 className="text-lg font-bold text-slate-800">Notifications</h1>
-    <p className="text-xs text-slate-400 mt-0.5">
-      Stay updated with your latest notifications
-    </p>
-  </div>
-</header>
+        <header className="bg-white border-b border-slate-200 px-8 h-16 flex items-center justify-between sticky top-0 z-40 shadow-sm">
+          <div>
+            <h1 className="text-lg font-bold text-slate-800">Notifications</h1>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Stay updated with your latest notifications
+            </p>
+          </div>
+        </header>
         <main className="flex-1 p-6 md:p-8 max-w-3xl mx-auto w-full">
           {/* Page header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
@@ -135,9 +142,9 @@ export default function Notifications({ activeNav,
                 >
                   Retry
                 </button>
-                
+
               </div>
-              
+
             )}
 
             {!loading && !error && visible.length === 0 && (
@@ -162,9 +169,9 @@ export default function Notifications({ activeNav,
               <div className="py-4 text-center text-xs text-slate-400">Loading more…</div>
             )}
           </div>
-          
+
         </main>
-        
+
       </div>
 
       <ConfirmModal
@@ -179,8 +186,8 @@ export default function Notifications({ activeNav,
         onConfirm={handleConfirm}
         onCancel={() => setConfirmModal(null)}
       />
-      
+
     </div>
-    
+
   );
 }

@@ -42,7 +42,7 @@ export function NotificationProvider({ children }) {
       prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
     );
     try {
-      await notificationApi.markNotificationRead(id);
+      await notificationApi.markAsRead(id);
     } catch (err) {
       setNotifications((prev) =>
         prev.map((n) => (n._id === id ? { ...n, isRead: false } : n))
@@ -60,7 +60,7 @@ export function NotificationProvider({ children }) {
       return prev.map((n) => ({ ...n, isRead: true }));
     });
     try {
-      await notificationApi.markAllNotificationsRead();
+      await notificationApi.markAllRead();
       toast.success("All notifications marked as read");
     } catch (err) {
       setNotifications(snapshot);

@@ -79,7 +79,7 @@ export default function ComplaintManagement({
       } catch (err) {
         toast.error(
           err?.response?.data?.message ||
-            "Failed to load complaints"
+          "Failed to load complaints"
         );
       } finally {
         setLoading(false);
@@ -129,7 +129,7 @@ export default function ComplaintManagement({
     } catch (err) {
       toast.error(
         err?.response?.data?.message ||
-          "Failed to update status"
+        "Failed to update status"
       );
     } finally {
       setStatusUpdatingId(null);
@@ -152,7 +152,7 @@ export default function ComplaintManagement({
     } catch (err) {
       toast.error(
         err?.response?.data?.message ||
-          "Failed to delete complaint"
+        "Failed to delete complaint"
       );
     } finally {
       setDeleting(false);

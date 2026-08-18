@@ -1,4 +1,4 @@
-export default function HeroBanner({stats}) {
+export default function HeroBanner({ stats }) {
   return (
     <div className="rounded-2xl bg-gradient-to-r from-[#4f54c9] to-[#6e73e5] p-6 text-white flex items-center justify-between">
       <div>
@@ -11,17 +11,17 @@ export default function HeroBanner({stats}) {
           Shree Ram Residency · Admin Panel
         </div>
       </div>
-       <div className="hidden md:flex gap-8 text-right">
+      <div className="hidden md:flex gap-8 text-right">
         <div>
           <p className="text-2xl font-bold">{stats.totalResidents}</p>
           <p className="text-indigo-200 text-xs mt-0.5">Total Residents</p>
         </div>
 
-        <div> 
+        <div>
           <p className="text-2xl font-bold">{stats.totalFlats}</p>
           <p className="text-indigo-200 text-xs mt-0.5">Total Flats</p>
         </div>
-        
+
       </div>
     </div>
   );

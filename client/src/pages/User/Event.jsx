@@ -43,6 +43,8 @@ export default function Event({
   complaints = [],
   fetchDashboardData,
   recentNotices = [],
+  dues = [],
+  transactions = [],
 }) {
   // States
   const [events, setEvents] = useState([]);
@@ -92,6 +94,9 @@ export default function Event({
         complaints={complaints}
         fetchDashboardData={fetchDashboardData}
         recentNotices={recentNotices}
+        events={events}
+        dues={dues}
+        transactions={transactions}
       />
 
       {/* Main */}
@@ -141,11 +146,10 @@ export default function Event({
                   return (
                     <div
                       key={e._id}
-                      className={`flex items-start gap-4 py-4 ${
-                        i < sortedEvents.length - 1
+                      className={`flex items-start gap-4 py-4 ${i < sortedEvents.length - 1
                           ? "border-b border-slate-100"
                           : ""
-                      } ${past ? "opacity-50" : ""}`}
+                        } ${past ? "opacity-50" : ""}`}
                     >
                       {/* Icon */}
                       <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-xl shrink-0">
@@ -175,13 +179,12 @@ export default function Event({
 
                       {/* Date Badge */}
                       <span
-                        className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide shrink-0 ${
-                          past
+                        className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide shrink-0 ${past
                             ? "bg-slate-100 text-slate-400"
                             : isSoon
                               ? "bg-indigo-50 text-indigo-600"
                               : "bg-amber-50 text-amber-600"
-                        }`}
+                          }`}
                       >
                         {dateLabel}
                       </span>

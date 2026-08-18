@@ -43,6 +43,9 @@ export default function MyDues({
   complaints,
   fetchDashboardData,
   recentNotices,
+  events = [],
+  dues: propDues = [],
+  transactions = [],
 }) {
   const [dues, setDues] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -123,6 +126,9 @@ export default function MyDues({
         complaints={complaints}
         fetchDashboardData={fetchDashboardData}
         recentNotices={recentNotices}
+        events={events}
+        dues={dues?.length > 0 ? dues : propDues}
+        transactions={transactions}
       />
 
       <div className="ml-60 flex-1 flex flex-col min-h-screen">
@@ -192,9 +198,8 @@ export default function MyDues({
           {/* ── Unpaid banner (first unpaid/overdue due) ── */}
           {!loading && !error && unpaid.length > 0 && (
             <div
-              className={`bg-white border rounded-2xl p-6 flex items-center justify-between gap-6 shadow-sm ${
-                unpaid[0].status === "Overdue" ? "border-red-300" : "border-amber-300"
-              }`}
+              className={`bg-white border rounded-2xl p-6 flex items-center justify-between gap-6 shadow-sm ${unpaid[0].status === "Overdue" ? "border-red-300" : "border-amber-300"
+                }`}
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
@@ -289,20 +294,18 @@ export default function MyDues({
                   return (
                     <div
                       key={d._id}
-                      className={`flex items-center justify-between py-4 ${
-                        i < dues.length - 1 ? "border-b border-slate-100" : ""
-                      }`}
+                      className={`flex items-center justify-between py-4 ${i < dues.length - 1 ? "border-b border-slate-100" : ""
+                        }`}
                     >
                       {/* Left */}
                       <div className="flex items-center gap-4">
                         <div
-                          className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${
-                            isPaid
+                          className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl shrink-0 ${isPaid
                               ? "bg-green-50"
                               : d.status === "Overdue"
-                              ? "bg-red-50"
-                              : "bg-amber-50"
-                          }`}
+                                ? "bg-red-50"
+                                : "bg-amber-50"
+                            }`}
                         >
                           {STATUS_ICON[d.status] || "⏳"}
                         </div>
@@ -325,9 +328,8 @@ export default function MyDues({
                         </span>
 
                         <span
-                          className={`text-xs font-semibold px-3 py-1 rounded-full capitalize ${
-                            STATUS_BADGE[d.status] || "bg-slate-100 text-slate-500"
-                          }`}
+                          className={`text-xs font-semibold px-3 py-1 rounded-full capitalize ${STATUS_BADGE[d.status] || "bg-slate-100 text-slate-500"
+                            }`}
                         >
                           {d.status}
                         </span>

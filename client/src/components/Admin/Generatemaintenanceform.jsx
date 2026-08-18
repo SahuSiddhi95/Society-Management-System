@@ -42,7 +42,7 @@ const GenerateMaintenanceForm = ({ onGenerated }) => {
 
     setLoading(true);
     try {
-      await API.post("/maintenance/generate-dues", {
+      const response = await API.post("/maintenance/generate-dues", {
         amount: Number(form.amount),
         month: form.month,
         year: Number(form.year),
@@ -50,7 +50,11 @@ const GenerateMaintenanceForm = ({ onGenerated }) => {
         category: form.category,
         description: form.description,
       });
-      toast.success("Maintenance dues generated for all residents");
+      const { total, emailsSent, smsSent, inAppSent } = response.data;
+      toast.success(
+        `Generated ${total} dues. Sent ${emailsSent} emails, ${smsSent} SMS, ${inAppSent} in-app notifications.`,
+        { duration: 5000 }
+      );
       setForm((prev) => ({ ...initialForm, month: prev.month, category: prev.category }));
       onGenerated?.();
     } catch (err) {

@@ -105,20 +105,18 @@ function ComplaintStatusCard() {
           complaints.slice(0, 3).map((c, i) => (
             <div
               key={c._id}
-              className={`flex justify-between gap-3 pb-4 ${
-                i !== complaints.slice(0, 3).length - 1
+              className={`flex justify-between gap-3 pb-4 ${i !== complaints.slice(0, 3).length - 1
                   ? "border-b border-gray-100"
                   : ""
-              }`}
+                }`}
             >
               {/* Left */}
               <div className="flex gap-3">
                 <span
-                  className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                    c.status === "pending"
+                  className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${c.status === "pending"
                       ? "bg-orange-400"
                       : "bg-green-400"
-                  }`}
+                    }`}
                 ></span>
 
                 <div>
