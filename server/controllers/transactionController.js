@@ -1,5 +1,7 @@
     const Transaction = require("../models/Transaction");
     const Maintenance = require("../models/Maintenance");
+    const User = require("../models/User");
+    const Notification = require("../models/Notification");
 
     exports.payMaintenance = async (req, res) => {
       try {
@@ -32,6 +34,19 @@
             description:
               `${maintenance.month} Maintenance`,
           });
+
+        const admins = await User.find({ role: "admin" });
+        if (admins.length > 0) {
+          const flatInfo = req.user.flatNo || req.user.flatNumber ? ` (Flat ${req.user.flatNo || req.user.flatNumber})` : "";
+          await Notification.insertMany(
+            admins.map((admin) => ({
+              title: "Maintenance Payment Received",
+              message: `${req.user.name || "Resident"}${flatInfo} paid ${maintenance.month} maintenance (₹${maintenance.amount})`,
+              type: "maintenance",
+              user: admin._id,
+            }))
+          );
+        }
 
         res.status(200).json({
           success: true,

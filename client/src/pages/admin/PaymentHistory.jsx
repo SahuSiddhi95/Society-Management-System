@@ -1,6 +1,4 @@
 import { useEffect, useState, useMemo } from "react";
-import Sidebar from "../../components/Admin/Sidebar";
-import Topbar from "../../components/Admin/Topbar";
 import { getPaymentHistory } from "../../api/Admin/paymentApi";
 import {
   Search,
@@ -25,7 +23,7 @@ const MONTH_NAMES = [
 
 const ROWS_PER_PAGE = 8;
 
-const PaymentHistory = ({ active, setActive, users }) => {
+const PaymentHistory = () => {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -201,17 +199,7 @@ const PaymentHistory = ({ active, setActive, users }) => {
   const handlePrint = () => window.print();
 
   return (
-    <div className="bg-gray-50 min-h-screen font-sans flex">
-      {/* Sidebar */}
-      <Sidebar active={active} setActive={setActive} />
-
-      {/* Main */}
-      <div className="ml-56 flex-1 flex flex-col min-h-screen">
-        {/* Topbar */}
-        <Topbar users={users} setActive={setActive} />
-
-        {/* Page Content */}
-        <main className="flex-1 p-6">
+    <>
           {/* Page Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
@@ -479,9 +467,6 @@ const PaymentHistory = ({ active, setActive, users }) => {
               </>
             )}
           </div>
-        </main>
-      </div>
-
       {/* View Details Modal */}
       {selectedPayment && (
         <PaymentDetailsModal
@@ -492,7 +477,7 @@ const PaymentHistory = ({ active, setActive, users }) => {
           monthLabel={monthLabel}
         />
       )}
-    </div>
+    </>
   );
 };
 

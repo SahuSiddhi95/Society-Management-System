@@ -1,25 +1,16 @@
 // pages/User/Complaints.jsx
 
 import { useState, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 
 import Icon from "../../assets/icons";
-import Sidebar from "../../components/User/Sidebar";
 
 import { createComplaint, getMyComplaints } from "../../api/complaintApi";
 
 const CATEGORIES = ["Water", "Electric", "Lift", "Plumber", "Other"];
 
-export default function Complaints({
-  activeNav,
-  setActiveNav,
-  user,
-  complaints: dashboardComplaints = [],
-  fetchDashboardData,
-  recentNotices = [],
-  events = [],
-  dues = [],
-  transactions = [],
-}) {
+export default function Complaints() {
+  const { fetchDashboardData } = useOutletContext();
   // States
   const [complaints, setComplaints] = useState([]);
 
@@ -142,22 +133,7 @@ export default function Complaints({
     return acc;
   }, {});
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
-      {/* Sidebar */}
-      <Sidebar
-        activeNav={activeNav}
-        setActiveNav={setActiveNav}
-        user={user}
-        complaints={dashboardComplaints}
-        fetchDashboardData={fetchDashboardData}
-        recentNotices={recentNotices}
-        events={events}
-        dues={dues}
-        transactions={transactions}
-      />
-
-      {/* Main */}
-      <div className="ml-60 flex-1 flex flex-col min-h-screen">
+    <>
         {/* Header */}
         <header className="bg-white border-b border-slate-200 px-8 h-16 flex items-center justify-between sticky top-0 z-40 shadow-sm">
           <div>
@@ -403,7 +379,6 @@ export default function Complaints({
             )}
           </div>
         </main>
-      </div>
-    </div>
+    </>
   );
 }

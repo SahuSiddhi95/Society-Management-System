@@ -1,11 +1,10 @@
 import { useState, useCallback } from "react";
+import { useOutletContext } from "react-router-dom";
 import { Edit2, Trash2, Eye, Plus } from "lucide-react";
 import { useEvents, useEventMutations } from "../../hooks/Useeventhooks";
 import { getEventsByCategory } from "../../api/Admin/Eventapi";
 import EventForm from "./Eventform";
 import toast from "../../Toast";
-import Sidebar from "../../components/Admin/Sidebar";
-import Topbar from "../../components/Admin/Topbar";
 const CATEGORIES = ["All", "Festival", "Meeting", "Sports", "Cultural", "Maintenance", "Kids Activity"];
 const STATUSES = ["Upcoming", "Ongoing", "Completed", "Cancelled"];
 
@@ -26,9 +25,8 @@ const STATUS_COLORS = {
 };
 
 // ── Component ──────────────────────────────────────────────────────────────
-export default function EventManagement({ active,
-  setActive,
-  users, }) {
+export default function EventManagement() {
+  const { users } = useOutletContext();
   const { events, setEvents, loading, refetch } = useEvents();
   const { remove, changeStatus, loading: mutating } = useEventMutations();
 
@@ -118,24 +116,7 @@ export default function EventManagement({ active,
 
   // ── Render ─────────────────────────────────────────────────────────────
   return (
-    <div className="bg-gray-50 min-h-screen font-sans flex">
-      {/* Sidebar */}
-      <Sidebar
-        active={active}
-        setActive={setActive}
-      />
-
-      {/* Main */}
-      <div className="ml-56 flex-1 flex flex-col min-h-screen">
-        {/* Topbar */}
-        <Topbar
-          users={users}
-          setActive={setActive}
-        />
-
-        {/* Page */}
-        <main className="flex-1 p-6">
-
+    <>
           {/* ── Header ──────────────────────────────────────────────────────── */}
           <div className="border-b border-slate-200 sticky top-0 z-30 bg-white ">
             <div className="max-w-6xl mx-auto px-6 py-5 ">
@@ -296,8 +277,6 @@ export default function EventManagement({ active,
               onCancel={closeForm}
             />
           )}
-        </main>
-      </div>
-    </div>
+    </>
   );
 }

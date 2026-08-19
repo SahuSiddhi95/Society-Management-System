@@ -1,5 +1,6 @@
 const Event = require("../models/events");
-const  Notification = require("../models/Notification")
+const Notification = require("../models/Notification");
+const User = require("../models/User");
 // Create Event
 exports.createEvent = async (req, res) => {
   try {

@@ -2,8 +2,6 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import API from "../../api/axios";
 import { useForm } from "react-hook-form";
 import toast, { Toaster } from "react-hot-toast";
-import Sidebar from "../../components/Admin/Sidebar";
-import Topbar from "../../components/Admin/Topbar";
 import {
   FileText, Calendar, Tag, Megaphone, Plus, Search, X, Pencil, Trash2, Eye,
   ChevronDown, AlertTriangle, User, Info, Loader2, RotateCcw, Inbox
@@ -680,9 +678,7 @@ function NoticeDetailsDrawer({ open, onClose, notice, loading, onEdit, onDelete,
 /*  Main Page                                                           */
 /* ------------------------------------------------------------------ */
 
-export default function NoticeManagementPage({ category, active,
-  setActive,
-  users, }) {
+export default function NoticeManagementPage({ category }) {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ search: "", category: "All", sort: "newest" });
@@ -748,21 +744,7 @@ export default function NoticeManagementPage({ category, active,
   const isFiltering = filters.search || filters.category !== "All";
 
   return (
-    <div className="bg-gray-50 min-h-screen font-sans flex">
-      {/* Sidebar */}
-      <Sidebar
-        active={active}
-        setActive={setActive}
-      />
-
-      {/* Main */}
-      <div className="ml-56 flex-1 flex flex-col min-h-screen">
-        {/* Topbar */}
-        <Topbar
-          users={users}
-          setActive={setActive}
-        />
-
+    <>
         {/* Page */}
         <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 bg-gray-50/60">
           <Toaster position="top-right" toastOptions={{
@@ -829,7 +811,6 @@ export default function NoticeManagementPage({ category, active,
             onDelete={openDelete}
           />
         </main>
-      </div>
-    </div>
+    </>
   );
-}   
+}

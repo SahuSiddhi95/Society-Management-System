@@ -2,17 +2,11 @@ import { useMemo, useState } from "react";
 // import NotificationCard from "../../components/Admin/Notificationcard";
 import NotificationTable from "../../components/Admin/Notificationtable";
 import NotificationDetailsDrawer from "../../components/Admin/Notificationdetailsdrawer";
-import Sidebar from "../../components/Admin/Sidebar";
-import Topbar from "../../components/Admin/Topbar";
 import { useNotifications } from "../../../context/Notificationcontext";
 
 const FILTERS = ["All", "Unread", "Read", "Newest", "Oldest"];
 
-export default function NotificationPage({
-  active,
-  setActive,
-  users,
-}) {
+export default function NotificationPage() {
   const {
     notifications,
     loading,
@@ -31,12 +25,17 @@ export default function NotificationPage({
 
     if (search.trim()) {
       const q = search.trim().toLowerCase();
-      list = list.filter(
-        (n) =>
+      list = list.filter((n) => {
+        const userObj = typeof n.user === "object" ? n.user : null;
+        const name = userObj?.name || n.senderName || n.sender || "";
+        const flat = userObj?.flatNo || userObj?.flatNumber || n.flatNo || n.flatNumber || "";
+        return (
           n.title?.toLowerCase().includes(q) ||
           n.message?.toLowerCase().includes(q) ||
-          n.user?.name?.toLowerCase().includes(q)
-      );
+          name.toLowerCase().includes(q) ||
+          flat.toLowerCase().includes(q)
+        );
+      });
     }
 
     if (filter === "Unread") list = list.filter((n) => !n.isRead);
@@ -62,24 +61,7 @@ export default function NotificationPage({
   // }, [notifications]);
 
   return (
-    <div className="bg-gray-50 min-h-screen font-sans flex">
-      {/* Sidebar */}
-      <Sidebar
-        active={active}
-        setActive={setActive}
-      />
-
-      {/* Main */}
-      <div className="ml-56 flex-1 flex flex-col min-h-screen">
-        {/* Topbar */}
-        <Topbar
-          users={users}
-          setActive={setActive}
-        />
-
-        {/* Page Content */}
-        <main className="flex-1 p-6">
-
+    <>
           <div className=" flex-1 flex flex-col min-h-screen">
 
 
@@ -167,8 +149,6 @@ export default function NotificationPage({
               setSelected(null);
             }}
           />
-        </main>
-      </div>
-    </div>
+    </>
   );
 }

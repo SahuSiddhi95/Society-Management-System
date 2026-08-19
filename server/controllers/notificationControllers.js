@@ -1,12 +1,18 @@
 const Notification = require("../models/Notification");
 
 // ================================
-// Get All Notifications (user-scoped)
+// Get All Notifications
 // GET /api/notifications/
 // ================================
 exports.getNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find({ user: req.user._id })
+    let query = { user: req.user._id };
+    if (req.user.role === "admin") {
+      query = {}; // Admin gets all notifications
+    }
+
+    const notifications = await Notification.find(query)
+      .populate("user", "name flatNo flatNumber email phone")
       .sort({ createdAt: -1 })
       .lean();
 
@@ -20,15 +26,18 @@ exports.getNotifications = async (req, res) => {
 };
 
 // ================================
-// Get Unread Notifications (user-scoped)
+// Get Unread Notifications
 // GET /api/notifications/unread
 // ================================
 exports.getUnreadNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find({
-      user: req.user._id,
-      read: false,
-    })
+    let query = { user: req.user._id, read: false };
+    if (req.user.role === "admin") {
+      query = { read: false };
+    }
+
+    const notifications = await Notification.find(query)
+      .populate("user", "name flatNo flatNumber email phone")
       .sort({ createdAt: -1 })
       .lean();
 
@@ -48,10 +57,12 @@ exports.getUnreadNotifications = async (req, res) => {
 // ================================
 exports.getUnreadCount = async (req, res) => {
   try {
-    const count = await Notification.countDocuments({
-      user: req.user._id,
-      read: false,
-    });
+    let query = { user: req.user._id, read: false };
+    if (req.user.role === "admin") {
+      query = { read: false };
+    }
+
+    const count = await Notification.countDocuments(query);
 
     res.status(200).json({ success: true, count });
   } catch (error) {
@@ -65,8 +76,9 @@ exports.getUnreadCount = async (req, res) => {
 // ================================
 exports.markAsRead = async (req, res) => {
   try {
+    const query = req.user.role === "admin" ? { _id: req.params.id } : { _id: req.params.id, user: req.user._id };
     const notification = await Notification.findOneAndUpdate(
-      { _id: req.params.id, user: req.user._id },
+      query,
       { read: true },
       { new: true }
     );
@@ -84,15 +96,13 @@ exports.markAsRead = async (req, res) => {
 };
 
 // ================================
-// Mark All as Read (user-scoped)
+// Mark All as Read
 // PUT /api/notifications/read-all
 // ================================
 exports.markAllAsRead = async (req, res) => {
   try {
-    await Notification.updateMany(
-      { user: req.user._id, read: false },
-      { read: true }
-    );
+    const query = req.user.role === "admin" ? { read: false } : { user: req.user._id, read: false };
+    await Notification.updateMany(query, { read: true });
 
     res.status(200).json({
       success: true,
@@ -109,10 +119,8 @@ exports.markAllAsRead = async (req, res) => {
 // ================================
 exports.deleteNotification = async (req, res) => {
   try {
-    const notification = await Notification.findOneAndDelete({
-      _id: req.params.id,
-      user: req.user._id,
-    });
+    const query = req.user.role === "admin" ? { _id: req.params.id } : { _id: req.params.id, user: req.user._id };
+    const notification = await Notification.findOneAndDelete(query);
 
     if (!notification) {
       return res
@@ -129,12 +137,13 @@ exports.deleteNotification = async (req, res) => {
 };
 
 // ================================
-// Delete All Notifications (user-scoped)
+// Delete All Notifications
 // DELETE /api/notifications/
 // ================================
 exports.deleteAllNotifications = async (req, res) => {
   try {
-    await Notification.deleteMany({ user: req.user._id });
+    const query = req.user.role === "admin" ? {} : { user: req.user._id };
+    await Notification.deleteMany(query);
 
     res.status(200).json({
       success: true,

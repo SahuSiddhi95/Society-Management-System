@@ -1,9 +1,9 @@
 // pages/User/Event.jsx
 
 import { useState, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 
 import Icon from "../../assets/icons";
-import Sidebar from "../../components/User/Sidebar";
 
 import { getAllEvents } from "../../api/Admin/Eventapi";
 
@@ -36,16 +36,7 @@ const isPastEvent = (dateString) => {
   return eventDate < today;
 };
 
-export default function Event({
-  activeNav,
-  setActiveNav,
-  user,
-  complaints = [],
-  fetchDashboardData,
-  recentNotices = [],
-  dues = [],
-  transactions = [],
-}) {
+export default function Event() {
   // States
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -85,22 +76,7 @@ export default function Event({
   const upcomingCount = events.filter((e) => !isPastEvent(e.date)).length;
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
-      {/* Sidebar */}
-      <Sidebar
-        activeNav={activeNav}
-        setActiveNav={setActiveNav}
-        user={user}
-        complaints={complaints}
-        fetchDashboardData={fetchDashboardData}
-        recentNotices={recentNotices}
-        events={events}
-        dues={dues}
-        transactions={transactions}
-      />
-
-      {/* Main */}
-      <div className="ml-60 flex-1 flex flex-col min-h-screen">
+    <>
         {/* Header */}
         <header className="bg-white border-b border-slate-200 px-8 h-16 flex items-center justify-between sticky top-0 z-40 shadow-sm">
           <div>
@@ -195,7 +171,6 @@ export default function Event({
             )}
           </div>
         </main>
-      </div>
-    </div>
+    </>
   );
 }

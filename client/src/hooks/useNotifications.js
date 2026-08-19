@@ -50,10 +50,15 @@ export default function useNotifications() {
     emit();
     try {
       const data = await getNotifications();
-      const list = Array.isArray(data) ? data : data?.notifications || [];
-      globalNotifications = list;
+      const list = Array.isArray(data) ? data : data?.notifications || data?.data || [];
+      const normalized = list.map((n) => ({
+        ...n,
+        isRead: n.isRead !== undefined ? n.isRead : !!n.read,
+        read: n.read !== undefined ? n.read : !!n.isRead,
+      }));
+      globalNotifications = normalized;
       globalFetchedOnce = true;
-      globalUnreadCount = list.filter((n) => !n.read).length;
+      globalUnreadCount = normalized.filter((n) => !n.read && !n.isRead).length;
     } catch (err) {
       globalError = "Couldn't load notifications. Please try again.";
     } finally {
@@ -75,8 +80,8 @@ export default function useNotifications() {
   const markAsRead = useCallback(async (id) => {
     let wasUnread = false;
     globalNotifications = globalNotifications.map((n) => {
-      if (n._id === id && !n.read) wasUnread = true;
-      return n._id === id ? { ...n, read: true } : n;
+      if (n._id === id && !n.read && !n.isRead) wasUnread = true;
+      return n._id === id ? { ...n, read: true, isRead: true } : n;
     });
     if (wasUnread) globalUnreadCount = Math.max(0, globalUnreadCount - 1);
     emit();
@@ -85,7 +90,7 @@ export default function useNotifications() {
       await apiMarkAsRead(id);
     } catch (err) {
       globalNotifications = globalNotifications.map((n) =>
-        n._id === id ? { ...n, read: false } : n
+        n._id === id ? { ...n, read: false, isRead: false } : n
       );
       if (wasUnread) globalUnreadCount += 1;
       emit();
@@ -94,7 +99,7 @@ export default function useNotifications() {
 
   const markAllAsRead = useCallback(async () => {
     const snapshot = globalNotifications;
-    globalNotifications = globalNotifications.map((n) => ({ ...n, read: true }));
+    globalNotifications = globalNotifications.map((n) => ({ ...n, read: true, isRead: true }));
     const prevUnread = globalUnreadCount;
     globalUnreadCount = 0;
     emit();
@@ -112,14 +117,14 @@ export default function useNotifications() {
     const snapshot = globalNotifications;
     const target = globalNotifications.find((n) => n._id === id);
     globalNotifications = globalNotifications.filter((n) => n._id !== id);
-    if (target && !target.read) globalUnreadCount = Math.max(0, globalUnreadCount - 1);
+    if (target && !target.read && !target.isRead) globalUnreadCount = Math.max(0, globalUnreadCount - 1);
     emit();
 
     try {
       await apiDeleteNotification(id);
     } catch (err) {
       globalNotifications = snapshot;
-      if (target && !target.read) globalUnreadCount += 1;
+      if (target && !target.read && !target.isRead) globalUnreadCount += 1;
       emit();
     }
   }, []);

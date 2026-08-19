@@ -1,5 +1,5 @@
-import NotificationItem from "./NotificationItem";
-import useNotifications from "../../hooks/useNotifications";
+import NotificationItem from "./Notificationitem";
+import { useNotifications } from "../../../context/Notificationcontext";
 
 export default function NotificationDropdown({ onClose, onViewAll }) {
   const {
@@ -8,7 +8,7 @@ export default function NotificationDropdown({ onClose, onViewAll }) {
     loading,
     error,
     markAllAsRead,
-    fetchAll,
+    fetchNotifications,
   } = useNotifications();
 
   const recent = notifications.slice(0, 8);
@@ -25,6 +25,7 @@ export default function NotificationDropdown({ onClose, onViewAll }) {
         </div>
         {unreadCount > 0 && (
           <button
+            type="button"
             onClick={markAllAsRead}
             className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
           >
@@ -52,7 +53,8 @@ export default function NotificationDropdown({ onClose, onViewAll }) {
             <span className="text-2xl">⚠️</span>
             <p className="text-xs text-gray-500">{error}</p>
             <button
-              onClick={fetchAll}
+              type="button"
+              onClick={fetchNotifications}
               className="text-xs font-semibold text-indigo-600 hover:underline"
             >
               Retry
@@ -64,17 +66,26 @@ export default function NotificationDropdown({ onClose, onViewAll }) {
             <p className="text-xs text-gray-500">No notifications yet</p>
           </div>
         ) : (
-          recent.map((n) => <NotificationItem key={n._id} notification={n} />)
+          recent.map((n) => (
+            <NotificationItem
+              key={n._id}
+              notification={n}
+              onClick={() => {
+                onViewAll?.();
+              }}
+            />
+          ))
         )}
       </div>
 
       {/* Footer */}
       <button
-        onClick={onViewAll}
-        
-        className="w-full text-center text-xs font-semibold text-indigo-600 hover:bg-gray-50 py-3 border-t border-gray-100 transition-colors"
+        type="button"
+        onClick={() => {
+          onViewAll?.();
+        }}
+        className="w-full text-center text-xs font-semibold text-indigo-600 hover:bg-gray-50 py-3 border-t border-gray-100 transition-colors cursor-pointer block"
       >
-        
         View All Notifications
       </button>
     </div>

@@ -4,17 +4,13 @@ import { Plus } from "lucide-react";
 
 import API from "../../api/axios";
 
-// Layout
-import Sidebar from "../../components/Admin/Sidebar";
-import Topbar from "../../components/Admin/Topbar";
-
 // Components
 import MaintenanceStats from "../../components/Admin/Maintenancestats";
 import GenerateMaintenanceForm from "../../components/Admin/Generatemaintenanceform";
 import MaintenanceTable from "../../components/Admin/Maintenancetable";
 import EditMaintenanceModal from "../../components/Admin/Editmaintenancemodal";
 
-const AdminMaintenance = ({ active, setActive, users }) => {
+const AdminMaintenance = () => {
   const [maintenance, setMaintenance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingRecord, setEditingRecord] = useState(null);
@@ -49,23 +45,7 @@ const AdminMaintenance = ({ active, setActive, users }) => {
   }, [fetchMaintenance]);
 
   return (
-    <div className="bg-gray-50 min-h-screen font-sans flex">
-      {/* Sidebar */}
-      <Sidebar
-        active={active}
-        setActive={setActive}
-      />
-
-      {/* Main */}
-      <div className="ml-56 flex-1 flex flex-col min-h-screen">
-        {/* Topbar */}
-        <Topbar
-          users={users}
-          setActive={setActive}
-        />
-
-        {/* Page Content */}
-        <main className="flex-1 p-6 lg:p-8">
+    <>
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
@@ -112,9 +92,7 @@ const AdminMaintenance = ({ active, setActive, users }) => {
               onUpdated={fetchMaintenance}
             />
           )}
-        </main>
-      </div>
-    </div>
+    </>
   );
 };
 

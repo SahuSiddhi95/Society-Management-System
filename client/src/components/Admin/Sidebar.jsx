@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import Icon from "./shared/Icon";
 import useNotifications from "../../hooks/useNotifications";
 import API from "../../api/axios";
@@ -24,25 +24,26 @@ const icons = {
 };
 
 const navItems = [
-  { label: "Dashboard", icon: icons.dashboard, key: "dashboard" },
-  { label: "Residents", icon: icons.residents, key: "Residents" },
-  { label: "Complaints", icon: icons.complaint, key: "Complaints", badge: 3 },
-  { label: "Maintenance", icon: icons.maintenance, key: "maintenance", badge: 1 },
-  { label: "Events", icon: icons.events, key: "Events" },
-  { label: "Notices", icon: icons.notice, key: "notices", badge: 3 },
-  { label: "Notifications", icon: icons.notification, key: "notification" },
+  { label: "Dashboard", icon: icons.dashboard, key: "dashboard", path: "/admin-dashboard" },
+  { label: "Residents", icon: icons.residents, key: "Residents", path: "/admin-dashboard/residents" },
+  { label: "Complaints", icon: icons.complaint, key: "Complaints", path: "/admin-dashboard/complaints" },
+  { label: "Maintenance", icon: icons.maintenance, key: "maintenance", path: "/admin-dashboard/maintenance" },
+  { label: "Events", icon: icons.events, key: "Events", path: "/admin-dashboard/events" },
+  { label: "Notices", icon: icons.notice, key: "notices", path: "/admin-dashboard/notices" },
+  { label: "Notifications", icon: icons.notification, key: "notification", path: "/admin-dashboard/notifications" },
 ];
 
 const finItems = [
-  { label: "Payment History", icon: icons.payment, key: "history" },
+  { label: "Payment History", icon: icons.payment, key: "history", path: "/admin-dashboard/payment-history" },
 ];
 
-export default function Sidebar({ active, setActive, admin = {} }) {
+export default function Sidebar({ admin = {} }) {
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const ref = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
   const { unreadCount } = useNotifications();
 
   // Dynamic counts for sidebar navigation
@@ -88,7 +89,7 @@ export default function Sidebar({ active, setActive, admin = {} }) {
     };
 
     fetchSidebarCounts();
-  }, [active]);
+  }, []);
 
   const adminName = admin?.name || "Admin";
   const societyName = admin?.society || "Shree Ram Residency";
@@ -200,12 +201,14 @@ export default function Sidebar({ active, setActive, admin = {} }) {
           else if (item.key === "notices") badgeValue = noticesCount;
           else if (item.key === "notification") badgeValue = unreadCount;
 
+          const isActive = location.pathname === item.path || (item.path === "/admin-dashboard" && location.pathname === "/admin-dashboard/");
+
           return (
-            <button
+            <Link
               key={item.key}
-              onClick={() => setActive(item.key)}
+              to={item.path}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl mb-1 text-sm font-medium transition-all
-                ${active === item.key ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}
+                ${isActive ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}
             >
               <span className="flex items-center gap-3">
                 <Icon d={item.icon} size={16} color="currentColor" />
@@ -216,24 +219,27 @@ export default function Sidebar({ active, setActive, admin = {} }) {
                   {badgeValue > 9 ? "9+" : badgeValue}
                 </span>
               )}
-            </button>
+            </Link>
           );
         })}
 
         <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-5">
           Financials
         </p>
-        {finItems.map((item) => (
-          <button
-            key={item.key}
-            onClick={() => setActive(item.key)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-sm font-medium transition-all
-              ${active === item.key ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}
-          >
-            <Icon d={item.icon} size={16} color="currentColor" />
-            {item.label}
-          </button>
-        ))}
+        {finItems.map((item) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.key}
+              to={item.path}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-sm font-medium transition-all
+                ${isActive ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}
+            >
+              <Icon d={item.icon} size={16} color="currentColor" />
+              {item.label}
+            </Link>
+          );
+        })}
 
         {/* Bottom breathing room so the last item never sits flush
             against the scroll edge. */}

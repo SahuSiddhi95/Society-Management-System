@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
-import Sidebar from "../../components/User/Sidebar";
+import { useOutletContext } from "react-router-dom";
 import Icon from "../../assets/icons";
 import API from "../../api/axios";
 
@@ -47,17 +47,8 @@ function deriveIcon(txn) {
 }
 
 // ─── component ──────────────────────────────────────────────
-export default function PaymentHistory({
-  activeNav,
-  setActiveNav,
-  user,
-  complaints,
-  fetchDashboardData,
-  recentNotices,
-  events = [],
-  transactions: propTransactions = [],
-  dues = [],
-}) {
+export default function PaymentHistory() {
+  const { fetchDashboardData, transactions: propTransactions = [] } = useOutletContext();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -123,34 +114,7 @@ export default function PaymentHistory({
 
   // ── render ───────────────────────────────────────────────
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
-      <Sidebar
-        activeNav={activeNav}
-        setActiveNav={setActiveNav}
-        user={user}
-        complaints={complaints}
-        fetchDashboardData={fetchDashboardData}
-        recentNotices={recentNotices}
-        events={events}
-        dues={dues}
-        transactions={transactions?.length > 0 ? transactions : propTransactions}
-      />
-
-      <div className="ml-60 flex-1 flex flex-col min-h-screen">
-        {/* ── Topbar ── */}
-        <header className="bg-white border-b border-slate-200 px-8 h-16 flex items-center justify-between sticky top-0 z-40 shadow-sm">
-          <div>
-            <h1 className="text-lg font-bold text-slate-800">Payment History</h1>
-            <p className="text-xs text-slate-400 mt-0.5">All your past transactions</p>
-          </div>
-          <button
-            onClick={handleDownload}
-            className="bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium px-4 py-2 rounded-xl transition-all"
-          >
-            ⬇️ Download Statement
-          </button>
-        </header>
-
+    <>
         <main className="p-8 flex flex-col gap-6">
           {/* ── Summary cards ── */}
           <div className="grid grid-cols-3 gap-4">
@@ -306,7 +270,6 @@ export default function PaymentHistory({
             )}
           </div>
         </main>
-      </div>
-    </div>
+    </>
   );
 }

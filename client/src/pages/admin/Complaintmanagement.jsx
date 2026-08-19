@@ -1,11 +1,8 @@
 // src/pages/admin/ComplaintManagement.jsx
 
 import { useState, useEffect, useCallback } from "react";
+import { useOutletContext } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-
-// Layout
-import Sidebar from "../../components/Admin/Sidebar";
-import Topbar from "../../components/Admin/Topbar";
 
 // APIs
 import {
@@ -31,11 +28,8 @@ const DEFAULT_FILTERS = {
 
 const SEARCH_DEBOUNCE_MS = 350;
 
-export default function ComplaintManagement({
-  active,
-  setActive,
-  users,
-}) {
+export default function ComplaintManagement() {
+  const { users } = useOutletContext();
   const [complaints, setComplaints] = useState([]);
   const [meta, setMeta] = useState({
     total: 0,
@@ -160,23 +154,7 @@ export default function ComplaintManagement({
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen font-sans flex">
-      {/* Sidebar */}
-      <Sidebar
-        active={active}
-        setActive={setActive}
-      />
-
-      {/* Main */}
-      <div className="ml-56 flex-1 flex flex-col min-h-screen">
-        {/* Topbar */}
-        <Topbar
-          users={users}
-          setActive={setActive}
-        />
-
-        {/* Page Content */}
-        <main className="flex-1 p-6">
+    <>
           <Toaster position="top-right" />
 
           <div className="mx-auto max-w-7xl space-y-6">
@@ -249,8 +227,6 @@ export default function ComplaintManagement({
               onConfirm={handleDeleteConfirm}
             />
           )}
-        </main>
-      </div>
-    </div>
+    </>
   );
 }

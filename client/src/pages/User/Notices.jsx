@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import Sidebar from "../../components/User/Sidebar";
-import Topbar from "../../components/User/Topbar";
+import { useOutletContext } from "react-router-dom";
 import { getAllNotices, getNoticeByCategory } from "../../api/noticeApi";
 
 const DotColor = {
@@ -16,16 +15,8 @@ const CategoryBadge = {
   Event: "bg-purple-100 text-purple-700",
 };
 
-export default function Notices({
-  activeNav,
-  setActiveNav,
-  user,
-  complaints = [],
-  recentNotices = [],
-  events = [],
-  dues = [],
-  transactions = [],
-}) {
+export default function Notices() {
+  const { user, complaints, recentNotices, events, dues, transactions } = useOutletContext();
   const [expanded, setExpanded] = useState(null);
   const [filter, setFilter] = useState("All");
   const [notices, setNotices] = useState([]);
@@ -46,22 +37,7 @@ export default function Notices({
   const filtered = notices;
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
-      <Sidebar
-        activeNav={activeNav}
-        setActiveNav={setActiveNav}
-        user={user}
-        complaints={complaints}
-        recentNotices={recentNotices}
-        events={events}
-        dues={dues}
-        transactions={transactions}
-      />
-
-      <div className="ml-60 flex-1 flex flex-col min-h-screen">
-        {/* Topbar */}
-        <Topbar user={user} setActiveNav={setActiveNav} />
-
+    <>
         <main className="p-8 flex flex-col gap-6">
           {/* Filter Tabs */}
           <div className="flex gap-2">
@@ -147,7 +123,6 @@ export default function Notices({
             ))}
           </div>
         </main>
-      </div>
-    </div>
+    </>
   );
 }

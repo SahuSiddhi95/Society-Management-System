@@ -1,12 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import Icon from "../../assets/icons";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import useNotifications from "../../hooks/useNotifications";
 
 export default function Sidebar({
-  activeNav,
-  setActiveNav,
-  user = [],
+  user = {},
   complaints = [],
   recentNotices = [],
   events = [],
@@ -95,13 +93,7 @@ export default function Sidebar({
     navigate("/user-login");
   };
 
-  // NEW: shared handler for nav item clicks — keeps existing setActiveNav
-  // behavior untouched, and additionally closes the mobile drawer so
-  // selecting a nav item on mobile auto-closes the sidebar (per spec).
-  const handleNavClick = (nav) => {
-    setActiveNav(nav);
-    onClose();
-  };
+  const location = useLocation();
 
   // User initials
   const initials =
@@ -175,103 +167,42 @@ export default function Sidebar({
             {collapsed ? <span className="md:hidden lg:inline">Main</span> : "Main"}
             {collapsed && <span className="hidden md:inline lg:hidden">•</span>}
           </p>
-          <button
-            onClick={() => handleNavClick("dashboard")}
-            title="Dashboard"
-            className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${collapsed ? "md:justify-center lg:justify-between" : ""
-              } ${activeNav === "dashboard"
-                ? "bg-white text-indigo-600 font-semibold"
-                : "text-white/80 hover:bg-white/10"
-              }`}
-          >
-            <div className="flex items-center gap-3">
-              <Icon name="home" />
-              <span className={collapsed ? "md:hidden lg:inline" : ""}>Dashboard</span>
-            </div>
-          </button>
-          <button
-            onClick={() => handleNavClick("notices")}
-            title="Notices"
-            className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${collapsed ? "md:justify-center lg:justify-between" : ""
-              } ${activeNav === "notices"
-                ? "bg-white text-indigo-600 font-semibold"
-                : "text-white/80 hover:bg-white/10"
-              }`}
-          >
-            <div className="flex items-center gap-3">
-              <Icon name="notice" />
-              <span className={collapsed ? "md:hidden lg:inline" : ""}>Notices</span>
-            </div>
-            <span
-              className={`bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full ${collapsed ? "md:hidden lg:inline-block" : ""
-                }`}
-            >
-              {recentNotices?.length || 0}
-            </span>
-          </button>
-
-          <button
-            onClick={() => handleNavClick("complaint")}
-            title="Complaints"
-            className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${collapsed ? "md:justify-center lg:justify-between" : ""
-              } ${activeNav === "complaint"
-                ? "bg-white text-indigo-600 font-semibold"
-                : "text-white/80 hover:bg-white/10"
-              }`}
-          >
-            <div className="flex items-center gap-3">
-              <Icon name="complaint" />
-              <span className={collapsed ? "md:hidden lg:inline" : ""}>Complaints</span>
-            </div>
-            <span
-              className={`bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full ${collapsed ? "md:hidden lg:inline-block" : ""
-                }`}
-            >
-              {complaints?.length || 0}
-            </span>
-          </button>
-          <button
-            onClick={() => handleNavClick("events")}
-            title="Events"
-            className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${collapsed ? "md:justify-center lg:justify-between" : ""
-              } ${activeNav === "events"
-                ? "bg-white text-indigo-600 font-semibold"
-                : "text-white/80 hover:bg-white/10"
-              }`}
-          >
-            <div className="flex items-center gap-3">
-              <Icon name="event" />
-              <span className={collapsed ? "md:hidden lg:inline" : ""}>Events</span>
-
-            </div>
-
-            <span
-              className={`bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full ${collapsed ? "md:hidden lg:inline-block" : ""
-                }`}
-            >
-              {events?.length || 0}
-            </span>
-          </button>
-          <button
-            onClick={() => handleNavClick("notification")}
-            title="Notification"
-            className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${collapsed ? "md:justify-center lg:justify-between" : ""
-              } ${activeNav === "notification"
-                ? "bg-white text-indigo-600 font-semibold"
-                : "text-white/80 hover:bg-white/10"
-              }`}
-          >
-            <div className="flex items-center gap-3">
-              <Icon name="bell" />
-              <span className={collapsed ? "md:hidden lg:inline" : ""}>Notification</span>
-            </div>
-            <span
-              className={`bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full ${collapsed ? "md:hidden lg:inline-block" : ""
-                }`}
-            >
-              {unreadCount || 0}
-            </span>
-          </button>
+          {[
+            { key: "dashboard", path: "/user-dashboard", icon: "home", label: "Dashboard", badgeCount: 0 },
+            { key: "notices", path: "/user-dashboard/notices", icon: "notice", label: "Notices", badgeCount: recentNotices?.length || 0 },
+            { key: "complaint", path: "/user-dashboard/complaints", icon: "complaint", label: "Complaints", badgeCount: complaints?.length || 0 },
+            { key: "events", path: "/user-dashboard/events", icon: "event", label: "Events", badgeCount: events?.length || 0 },
+            { key: "notification", path: "/user-dashboard/notifications", icon: "bell", label: "Notification", badgeCount: unreadCount || 0 },
+          ].map((item) => {
+            const isActive = location.pathname === item.path || (item.path === "/user-dashboard" && location.pathname === "/user-dashboard/");
+            return (
+              <Link
+                key={item.key}
+                to={item.path}
+                onClick={onClose}
+                title={item.label}
+                className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${collapsed ? "md:justify-center lg:justify-between" : ""
+                  } ${isActive
+                    ? "bg-white text-indigo-600 font-semibold"
+                    : "text-white/80 hover:bg-white/10"
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon name={item.icon} />
+                  <span className={collapsed ? "md:hidden lg:inline" : ""}>{item.label}</span>
+                </div>
+                {item.badgeCount > 0 && (
+                  <span
+                    className={`bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full ${collapsed ? "md:hidden lg:inline-block" : ""
+                      }`}
+                  >
+                    {item.badgeCount}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+          
           <p
             className={`text-[10px] font-semibold tracking-widest text-white/40 uppercase px-2.5 pt-4 pb-1 ${collapsed ? "md:text-center lg:text-left" : ""
               }`}
@@ -279,46 +210,39 @@ export default function Sidebar({
             {collapsed ? <span className="md:hidden lg:inline">Financials</span> : "Financials"}
             {collapsed && <span className="hidden md:inline lg:hidden">•</span>}
           </p>
-          <button
-            onClick={() => handleNavClick("dues")}
-            title="My Dues"
-            className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${collapsed ? "md:justify-center lg:justify-between" : ""
-              } ${activeNav === "dues"
-                ? "bg-white text-indigo-600 font-semibold"
-                : "text-white/80 hover:bg-white/10"
-              }`}
-          >
-            <div className="flex items-center gap-3">
-              <Icon name="dues" />
-              <span className={collapsed ? "md:hidden lg:inline" : ""}>My Dues</span>
-            </div>
-            <span
-              className={`bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full ${collapsed ? "md:hidden lg:inline-block" : ""
-                }`}
-            >
-              {pendingDuesCount || 0}
-            </span>
-          </button>
-          <button
-            onClick={() => handleNavClick("history")}
-            title="Payment History"
-            className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${collapsed ? "md:justify-center lg:justify-between" : ""
-              } ${activeNav === "history"
-                ? "bg-white text-indigo-600 font-semibold"
-                : "text-white/80 hover:bg-white/10"
-              }`}
-          >
-            <div className="flex items-center gap-3">
-              <Icon name="history" />
-              <span className={collapsed ? "md:hidden lg:inline" : ""}>Payment History</span>
-            </div>
-            <span
-              className={`bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full ${collapsed ? "md:hidden lg:inline-block" : ""
-                }`}
-            >
-              {successfulTxnsCount || 0}
-            </span>
-          </button>
+
+          {[
+            { key: "dues", path: "/user-dashboard/dues", icon: "dues", label: "My Dues", badgeCount: pendingDuesCount || 0 },
+            { key: "history", path: "/user-dashboard/history", icon: "history", label: "Payment History", badgeCount: successfulTxnsCount || 0 },
+          ].map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.key}
+                to={item.path}
+                onClick={onClose}
+                title={item.label}
+                className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${collapsed ? "md:justify-center lg:justify-between" : ""
+                  } ${isActive
+                    ? "bg-white text-indigo-600 font-semibold"
+                    : "text-white/80 hover:bg-white/10"
+                  }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Icon name={item.icon} />
+                  <span className={collapsed ? "md:hidden lg:inline" : ""}>{item.label}</span>
+                </div>
+                {item.badgeCount > 0 && (
+                  <span
+                    className={`bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full ${collapsed ? "md:hidden lg:inline-block" : ""
+                      }`}
+                  >
+                    {item.badgeCount}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* User + Dropdown */}

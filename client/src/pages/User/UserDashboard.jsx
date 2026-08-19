@@ -1,22 +1,11 @@
 // pages/User/UserDashboard.jsx
 
 import { useState, useEffect } from "react";
+import { Outlet } from "react-router-dom";
 
 import Sidebar from "../../components/User/Sidebar";
 import Topbar from "../../components/User/Topbar";
-import WelcomeBanner from "../../components/User/WelcomeBanner";
-import StatCards from "../../components/User/StatCards";
-import RecentNotices from "../../components/User/RecentNotices";
-import MaintenanceDue from "../../components/User/MaintenanceDue";
-import MyComplaints from "../../components/User/MyComplaints";
-import PaymentHistoryCard from "../../components/User/PaymentHistoryCard";
 import API from "../../api/axios";
-import Notices from "./Notices";
-import Complaints from "./Complaints";
-import MyDues from "./Mydues";
-import PaymentHistory from "./Paymenthistory";
-import Event from "./Event";
-import Notifications from "./Notifications";
 
 // API helpers
 import { getMyComplaints } from "../../api/complaintApi";
@@ -25,9 +14,6 @@ import { getAllNotices } from "../../api/noticeApi";
 import { getAllEvents } from "../../api/Admin/Eventapi";
 
 export default function SocietyDashboard() {
-  // SPA navigation state
-  const [activeNav, setActiveNav] = useState("dashboard");
-
   // Data states
   const [complaints, setComplaints] = useState([]);
   const [recentNotices, setRecentNotices] = useState([]);
@@ -126,12 +112,8 @@ export default function SocietyDashboard() {
     );
   }
 
-  // ── Page Routes (SPA navigation) ─────────────────────────────────────────
-
-  // Shared props passed to every sub-page
-  const sharedProps = {
-    activeNav,
-    setActiveNav,
+  // Shared props passed to every sub-page via Outlet context
+  const contextProps = {
     user,
     complaints,
     fetchDashboardData,
@@ -141,20 +123,11 @@ export default function SocietyDashboard() {
     transactions,
   };
 
-  if (activeNav === "notices") return <Notices {...sharedProps} />;
-  if (activeNav === "notification") return <Notifications {...sharedProps} />;
-  if (activeNav === "complaint") return <Complaints {...sharedProps} />;
-  if (activeNav === "dues") return <MyDues {...sharedProps} />;
-  if (activeNav === "history") return <PaymentHistory {...sharedProps} />;
-  if (activeNav === "events") return <Event {...sharedProps} events={events} />;
-
   // ── Dashboard UI ─────────────────────────────────────────────────────────
   return (
     <div className="flex min-h-screen bg-slate-50 font-sans">
       {/* Sidebar */}
       <Sidebar
-        activeNav={activeNav}
-        setActiveNav={setActiveNav}
         user={user}
         complaints={complaints}
         recentNotices={recentNotices}
@@ -165,45 +138,12 @@ export default function SocietyDashboard() {
 
       {/* Main */}
       <div className="md:ml-60 flex-1 flex flex-col min-h-screen">
-        {/* Topbar with setActiveNav so bell "View all" navigates correctly */}
-        <Topbar user={user} setActiveNav={setActiveNav} />
+        {/* Topbar */}
+        <Topbar user={user} />
 
         {/* Content */}
         <main className="p-4 sm:p-6 lg:p-8 flex flex-col gap-5 lg:gap-6">
-          {/* Welcome Banner */}
-          <WelcomeBanner user={user} complaints={complaints} />
-
-          {/* Stats — passes real dues + transaction data */}
-          <StatCards
-            complaints={complaints}
-            setActiveNav={setActiveNav}
-            recentNotices={recentNotices}
-            transactions={transactions}
-            dues={dues}
-          />
-
-          {/* Notices + Maintenance Due */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 lg:gap-5">
-            <RecentNotices
-              complaints={complaints}
-              recentNotices={recentNotices}
-              setActiveNav={setActiveNav}
-            />
-            {/* MaintenanceDue fetches its own data internally */}
-            <MaintenanceDue setActiveNav={setActiveNav} />
-          </div>
-
-          {/* Complaints + Payment History */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-5">
-            <MyComplaints
-              complaints={complaints}
-              setActiveNav={setActiveNav}
-            />
-            <PaymentHistoryCard
-              setActiveNav={setActiveNav}
-              transactions={transactions}
-            />
-          </div>
+          <Outlet context={contextProps} />
         </main>
       </div>
     </div>

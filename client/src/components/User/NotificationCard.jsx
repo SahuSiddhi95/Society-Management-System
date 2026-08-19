@@ -57,27 +57,36 @@ export default function NotificationCard({
     <div
       onClick={onClick}
       className={[
-        "group relative flex gap-3.5 px-4 py-4 cursor-pointer rounded-xl border shadow-sm",
-        "transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99]",
+        "group relative flex flex-col sm:flex-row items-start sm:items-center gap-3.5 px-4 sm:px-5 py-4 cursor-pointer rounded-2xl border shadow-sm",
+        "transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.995]",
         isUnread
-          ? `bg-indigo-50/40 border-l-4 ${config.leftBorder} border-slate-200`
+          ? `bg-indigo-50/30 border-l-4 ${config.leftBorder} border-slate-200`
           : "bg-white border-slate-200 hover:border-slate-300",
       ].join(" ")}
     >
-      {/* Type icon */}
-      <div
-        className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 text-xl ${config.iconBg} border ${config.border}`}
-      >
-        {config.icon}
+      {/* Top row for mobile: Icon + Badges */}
+      <div className="flex items-center justify-between w-full sm:w-auto">
+        <div
+          className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 text-xl ${config.iconBg} border ${config.border}`}
+        >
+          {config.icon}
+        </div>
+
+        {/* Category badge (Visible on mobile header) */}
+        <span
+          className={`sm:hidden shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wide ${config.bg} ${config.text} ${config.border}`}
+        >
+          {config.label}
+        </span>
       </div>
 
       {/* Content */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 w-full">
         {/* Title row */}
         <div className="flex items-start justify-between gap-2 mb-1">
           <div className="flex items-center gap-2 min-w-0 flex-1">
             <p
-              className={`text-sm leading-snug truncate ${
+              className={`text-sm sm:text-base leading-snug truncate ${
                 isUnread ? "font-bold text-slate-900" : "font-semibold text-slate-700"
               }`}
             >
@@ -91,29 +100,29 @@ export default function NotificationCard({
             )}
           </div>
 
-          {/* Category badge */}
+          {/* Category badge (Desktop) */}
           <span
-            className={`shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wide ${config.bg} ${config.text} ${config.border}`}
+            className={`hidden sm:inline-block shrink-0 px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wide ${config.bg} ${config.text} ${config.border}`}
           >
             {config.label}
           </span>
         </div>
 
         {/* Message */}
-        <p className="text-xs text-slate-500 leading-relaxed line-clamp-2 mb-2">
+        <p className="text-xs sm:text-sm text-slate-500 leading-relaxed line-clamp-2 mb-3">
           {notification.message}
         </p>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-slate-400">{timeStr}</span>
+        <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100/60">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-[11px] text-slate-400 font-medium">{timeStr}</span>
 
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-semibold border ${
                 isUnread
-                  ? "bg-blue-50 text-blue-600 border-blue-100"
-                  : "bg-emerald-50 text-emerald-600 border-emerald-100"
+                  ? "bg-indigo-50 text-indigo-600 border-indigo-100"
+                  : "bg-slate-100 text-slate-500 border-slate-200"
               }`}
             >
               {isUnread ? "Unread" : "Read"}
@@ -128,7 +137,8 @@ export default function NotificationCard({
 
           {/* Action buttons */}
           <div className="flex items-center gap-1">
-            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+            {/* Always visible on touch/mobile, hover reveal on desktop */}
+            <div className="flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
               {isUnread && (
                 <button
                   onClick={(e) => {
@@ -136,9 +146,9 @@ export default function NotificationCard({
                     onMarkRead?.(notification._id);
                   }}
                   title="Mark as read"
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
+                  className="w-8 h-8 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
                 >
-                  <Check className="w-3.5 h-3.5" />
+                  <Check className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                 </button>
               )}
               <button
@@ -147,13 +157,13 @@ export default function NotificationCard({
                   onDelete?.(notification._id);
                 }}
                 title="Delete notification"
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                className="w-8 h-8 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-colors"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
               </button>
             </div>
 
-            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all" />
+            <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5 transition-all ml-1" />
           </div>
         </div>
       </div>

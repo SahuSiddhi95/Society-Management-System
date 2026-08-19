@@ -20,9 +20,14 @@ export function NotificationProvider({ children }) {
     try {
       setError("");
       setLoading(true);
-      const { data } = await notificationApi.getNotifications();
-      const list = Array.isArray(data) ? data : data?.notifications || [];
-      setNotifications(list);
+      const res = await notificationApi.getNotifications();
+      const list = Array.isArray(res) ? res : res?.notifications || res?.data || [];
+      const normalized = list.map((n) => ({
+        ...n,
+        isRead: n.isRead !== undefined ? n.isRead : !!n.read,
+        read: n.read !== undefined ? n.read : !!n.isRead,
+      }));
+      setNotifications(normalized);
     } catch (err) {
       setError(
         err?.response?.data?.message || "Failed to load notifications"
@@ -39,13 +44,13 @@ export function NotificationProvider({ children }) {
   // Optimistic: flip locally first so the UI feels instant, roll back on failure.
   const markAsRead = useCallback(async (id) => {
     setNotifications((prev) =>
-      prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+      prev.map((n) => (n._id === id ? { ...n, isRead: true, read: true } : n))
     );
     try {
       await notificationApi.markAsRead(id);
     } catch (err) {
       setNotifications((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, isRead: false } : n))
+        prev.map((n) => (n._id === id ? { ...n, isRead: false, read: false } : n))
       );
       toast.error(
         err?.response?.data?.message || "Failed to mark notification as read"
@@ -57,7 +62,7 @@ export function NotificationProvider({ children }) {
     let snapshot;
     setNotifications((prev) => {
       snapshot = prev;
-      return prev.map((n) => ({ ...n, isRead: true }));
+      return prev.map((n) => ({ ...n, isRead: true, read: true }));
     });
     try {
       await notificationApi.markAllRead();
@@ -88,7 +93,7 @@ export function NotificationProvider({ children }) {
   }, []);
 
   const unreadCount = useMemo(
-    () => notifications.filter((n) => !n.isRead).length,
+    () => notifications.filter((n) => !n.isRead && !n.read).length,
     [notifications]
   );
 

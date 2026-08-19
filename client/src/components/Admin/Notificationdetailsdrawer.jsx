@@ -40,6 +40,10 @@ export default function NotificationDetailsDrawer({
     setTimeout(onClose, 200);
   };
 
+  const residentName = notification.user?.name || notification.sender || "—";
+  const flatNumber = notification.user?.flatNo || notification.user?.flatNumber || "—";
+  const isRead = !!(notification.isRead || notification.read);
+
   return (
     <div
       className="fixed inset-0 z-[70] flex justify-end"
@@ -63,6 +67,7 @@ export default function NotificationDetailsDrawer({
             Notification Details
           </h2>
           <button
+            type="button"
             onClick={handleClose}
             className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors"
           >
@@ -74,43 +79,62 @@ export default function NotificationDetailsDrawer({
           <div>
             <span
               className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide ${
-                notification.isRead
+                isRead
                   ? "bg-gray-100 text-gray-500"
-                  : "bg-blue-50 text-blue-600"
+                  : "bg-indigo-50 text-indigo-700 font-bold border border-indigo-100"
               }`}
             >
-              {notification.isRead ? "Read" : "Unread"}
+              {isRead ? "Read" : "Unread"}
             </span>
             <h3 className="text-lg font-bold text-gray-900 mt-3">
               {notification.title}
             </h3>
-            <p className="text-sm text-gray-600 mt-2 leading-relaxed">
+            <p className="text-sm text-gray-700 mt-2 leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100">
               {notification.message}
             </p>
           </div>
 
           <div className="border-t border-gray-100 pt-4 space-y-3">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Resident</span>
-              <span className="font-medium text-gray-800">
-                {notification.user?.name || "—"}
+            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+              Resident Metadata
+            </h4>
+            <div className="flex justify-between items-center text-sm py-1.5 border-b border-gray-50">
+              <span className="text-gray-400 font-medium">Resident Name</span>
+              <span className="font-bold text-gray-900 bg-indigo-50 px-2.5 py-1 rounded-lg text-indigo-700 border border-indigo-100">
+                👤 {residentName}
               </span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Flat Number</span>
-              <span className="font-medium text-gray-800">
-                {notification.user?.flatNo || "—"}
+            <div className="flex justify-between items-center text-sm py-1.5 border-b border-gray-50">
+              <span className="text-gray-400 font-medium">Flat Number</span>
+              <span className="font-bold text-indigo-900 bg-indigo-100/60 px-2.5 py-1 rounded-lg border border-indigo-200">
+                Flat {flatNumber}
               </span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Type</span>
-              <span className="font-medium text-gray-800 capitalize">
+            {notification.user?.email && (
+              <div className="flex justify-between items-center text-sm py-1.5 border-b border-gray-50">
+                <span className="text-gray-400 font-medium">Email</span>
+                <span className="font-semibold text-gray-700">
+                  {notification.user.email}
+                </span>
+              </div>
+            )}
+            {notification.user?.phone && (
+              <div className="flex justify-between items-center text-sm py-1.5 border-b border-gray-50">
+                <span className="text-gray-400 font-medium">Phone</span>
+                <span className="font-semibold text-gray-700">
+                  {notification.user.phone}
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between items-center text-sm py-1.5 border-b border-gray-50">
+              <span className="text-gray-400 font-medium">Type</span>
+              <span className="font-semibold text-gray-800 capitalize">
                 {notification.type || "General"}
               </span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-400">Created</span>
-              <span className="font-medium text-gray-800">
+            <div className="flex justify-between items-center text-sm py-1.5 border-b border-gray-50">
+              <span className="text-gray-400 font-medium">Received Date</span>
+              <span className="font-semibold text-gray-800">
                 {formatTimeAgo(notification.createdAt)}
               </span>
             </div>
@@ -118,8 +142,9 @@ export default function NotificationDetailsDrawer({
         </div>
 
         <div className="flex items-center gap-3 px-6 py-5 border-t border-gray-100">
-          {!notification.isRead && (
+          {!isRead && (
             <button
+              type="button"
               onClick={() => onMarkRead(notification._id)}
               className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-green-700 bg-green-50 hover:bg-green-100 transition-colors"
             >
@@ -128,6 +153,7 @@ export default function NotificationDetailsDrawer({
             </button>
           )}
           <button
+            type="button"
             onClick={() => {
               onDelete(notification._id);
               handleClose();
@@ -138,6 +164,7 @@ export default function NotificationDetailsDrawer({
             Delete
           </button>
           <button
+            type="button"
             onClick={handleClose}
             className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
           >

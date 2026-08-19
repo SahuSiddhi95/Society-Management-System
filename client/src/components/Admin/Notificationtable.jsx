@@ -49,76 +49,88 @@ export default function NotificationTable({
       <div className="grid grid-cols-7 gap-4 px-6 py-2 bg-gray-50 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
         <span></span>
         <span className="col-span-2">Notification</span>
-        <span>Resident</span>
+        <span className="col-span-2">Resident &amp; Flat</span>
         <span>Date &amp; Time</span>
-        <span>Status</span>
         <span className="text-right">Actions</span>
       </div>
 
       <div className="divide-y divide-gray-50">
-        {notifications.map((n) => (
-          <div
-            key={n._id}
-            onClick={() => onSelect(n)}
-            className="grid grid-cols-7 gap-4 items-center px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
-          >
-            <div className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center">
-              <Icon d={bellPath} size={14} color="#6366f1" />
-            </div>
+        {notifications.map((n) => {
+          const userObj = typeof n.user === "object" ? n.user : null;
+          const residentName = userObj?.name || n.senderName || n.sender;
+          const flatNo = userObj?.flatNo || userObj?.flatNumber || n.flatNo || n.flatNumber;
+          const isRead = !!(n.isRead || n.read);
 
-            <div className="col-span-2 min-w-0">
-              <p
-                className={`text-sm text-gray-900 truncate ${
-                  n.isRead ? "font-medium" : "font-bold"
-                }`}
-              >
-                {n.title}
-              </p>
-              <p className="text-xs text-gray-400 truncate">{n.message}</p>
-            </div>
+          let residentLabel = "";
+          if (residentName && flatNo) {
+            residentLabel = `${residentName} • Flat ${flatNo}`;
+          } else if (residentName) {
+            residentLabel = residentName;
+          } else if (flatNo) {
+            residentLabel = `Flat ${flatNo}`;
+          }
 
-            <div className="text-sm text-gray-600 truncate">
-              {n.user?.name || "—"}
-              {n.user?.flatNo && (
-                <span className="text-gray-400"> · {n.user.flatNo}</span>
-              )}
-            </div>
-
-            <span className="text-xs text-gray-500">
-              {formatTimeAgo(n.createdAt)}
-            </span>
-
-            <span
-              className={`text-[10px] font-bold px-2.5 py-1 rounded-full w-fit uppercase tracking-wide ${
-                n.isRead ? "bg-gray-100 text-gray-500" : "bg-blue-50 text-blue-600"
-              }`}
-            >
-              {n.isRead ? "Read" : "Unread"}
-            </span>
-
+          return (
             <div
-              className="flex items-center justify-end gap-2"
-              onClick={(e) => e.stopPropagation()}
+              key={n._id}
+              onClick={() => onSelect(n)}
+              className="grid grid-cols-7 gap-4 items-center px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer"
             >
-              {!n.isRead && (
-                <button
-                  onClick={() => onMarkRead(n._id)}
-                  title="Mark as read"
-                  className="w-7 h-7 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center hover:bg-green-50 transition-colors"
+              <div className="w-9 h-9 rounded-full bg-indigo-50 flex items-center justify-center">
+                <Icon d={bellPath} size={14} color="#6366f1" />
+              </div>
+
+              <div className="col-span-2 min-w-0">
+                <p
+                  className={`text-sm text-gray-900 truncate ${
+                    isRead ? "font-medium" : "font-bold"
+                  }`}
                 >
-                  <Icon d={checkPath} size={12} color="#16a34a" />
-                </button>
-              )}
-              <button
-                onClick={() => onDelete(n._id)}
-                title="Delete"
-                className="w-7 h-7 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center hover:bg-red-50 transition-colors"
+                  {n.title}
+                </p>
+                <p className="text-xs text-gray-400 truncate">{n.message}</p>
+              </div>
+
+              <div className="col-span-2 min-w-0">
+                {residentLabel ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 truncate max-w-full">
+                    👤 {residentLabel}
+                  </span>
+                ) : (
+                  <span className="text-xs text-gray-400 font-medium">—</span>
+                )}
+              </div>
+
+              <span className="text-xs text-gray-500">
+                {formatTimeAgo(n.createdAt)}
+              </span>
+
+              <div
+                className="flex items-center justify-end gap-2"
+                onClick={(e) => e.stopPropagation()}
               >
-                <Icon d={trashPath} size={12} color="#ef4444" />
-              </button>
+                {!isRead && (
+                  <button
+                    type="button"
+                    onClick={() => onMarkRead(n._id)}
+                    title="Mark as read"
+                    className="w-7 h-7 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center hover:bg-green-50 transition-colors"
+                  >
+                    <Icon d={checkPath} size={12} color="#16a34a" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => onDelete(n._id)}
+                  title="Delete"
+                  className="w-7 h-7 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center hover:bg-red-50 transition-colors"
+                >
+                  <Icon d={trashPath} size={12} color="#ef4444" />
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

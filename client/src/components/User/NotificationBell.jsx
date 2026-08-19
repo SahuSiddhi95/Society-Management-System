@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
 import useNotifications from "../../hooks/useNotifications";
 import NotificationDropdown from "./NotificationDropdown";
 
-export default function NotificationBell({ onNavigate }) {
+export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
+  const navigate = useNavigate();
 
   const notificationState = useNotifications();
   const { unreadCount, refreshUnreadCount, fetchAll, fetchedOnce } =
@@ -48,8 +50,7 @@ export default function NotificationBell({ onNavigate }) {
 
   const handleViewAll = () => {
     setOpen(false);
-    // onNavigate navigates to the notifications page via setActiveNav
-    if (onNavigate) onNavigate("notification");
+    navigate("/user-dashboard/notifications");
   };
 
   return (

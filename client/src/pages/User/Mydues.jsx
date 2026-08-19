@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
-import Sidebar from "../../components/User/Sidebar";
+import { useOutletContext } from "react-router-dom";
 import API from "../../api/axios";
 
 // ─── helpers ────────────────────────────────────────────────
@@ -36,17 +36,8 @@ const STATUS_ICON = {
 };
 
 // ─── component ──────────────────────────────────────────────
-export default function MyDues({
-  activeNav,
-  setActiveNav,
-  user,
-  complaints,
-  fetchDashboardData,
-  recentNotices,
-  events = [],
-  dues: propDues = [],
-  transactions = [],
-}) {
+export default function MyDues() {
+  const { fetchDashboardData, dues: propDues = [] } = useOutletContext();
   const [dues, setDues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -118,30 +109,7 @@ export default function MyDues({
   );
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
-      <Sidebar
-        activeNav={activeNav}
-        setActiveNav={setActiveNav}
-        user={user}
-        complaints={complaints}
-        fetchDashboardData={fetchDashboardData}
-        recentNotices={recentNotices}
-        events={events}
-        dues={dues?.length > 0 ? dues : propDues}
-        transactions={transactions}
-      />
-
-      <div className="ml-60 flex-1 flex flex-col min-h-screen">
-        {/* ── Topbar ── */}
-        <header className="bg-white border-b border-slate-200 px-8 h-16 flex items-center justify-between sticky top-0 z-40 shadow-sm">
-          <div>
-            <h1 className="text-lg font-bold text-slate-800">My Dues</h1>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Maintenance and payment overview
-            </p>
-          </div>
-        </header>
-
+    <>
         <main className="p-8 flex flex-col gap-6">
           {/* ── Pay error toast ── */}
           {payError && (
@@ -351,7 +319,6 @@ export default function MyDues({
             )}
           </div>
         </main>
-      </div>
-    </div>
+    </>
   );
 }

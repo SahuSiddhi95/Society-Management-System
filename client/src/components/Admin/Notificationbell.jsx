@@ -1,17 +1,19 @@
 import { useState, useRef, useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Icon from "./shared/Icon";
 import NotificationDropdown from "./Notificationdropdown";
-import useNotifications from "../../hooks/useNotifications";
+import { useNotifications } from "../../../context/Notificationcontext";
 
 const bellPath =
   "M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9 M13.73 21a2 2 0 0 1-3.46 0";
 
-export default function NotificationBell({ setActive }) {
+export default function NotificationBell() {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  const { unreadCount } = useNotifications();
+  const { unreadCount, fetchNotifications } = useNotifications();
+  const navigate = useNavigate();
 
+  // Close on outside click
   useEffect(() => {
     function handleClickOutside(e) {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
@@ -20,6 +22,7 @@ export default function NotificationBell({ setActive }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Close on Escape
   useEffect(() => {
     if (!open) return;
     function handleKeyDown(e) {
@@ -29,12 +32,27 @@ export default function NotificationBell({ setActive }) {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open]);
 
+  const toggleOpen = () => {
+    setOpen((prev) => {
+      const next = !prev;
+      if (next) fetchNotifications();
+      return next;
+    });
+  };
+
+  const handleViewAll = () => {
+    setOpen(false);
+    navigate("/admin-dashboard/notifications");
+  };
+
   return (
     <div className="relative" ref={ref}>
       <button
-        onClick={() => setOpen((p) => !p)}
+        type="button"
+        onClick={toggleOpen}
         aria-expanded={open}
-        className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors relative"
+        className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors relative cursor-pointer"
+        title="Notifications"
       >
         <Icon d={bellPath} size={16} color="#6b7280" />
         {unreadCount > 0 && (
@@ -44,24 +62,17 @@ export default function NotificationBell({ setActive }) {
         )}
       </button>
 
-      {/* Dropdown — always mounted, animated purely via opacity/scale so
-          both open and close transition smoothly (same pattern as the
-          Sidebar's profile dropdown). */}
-      <div
-        className={`absolute right-0 top-full mt-2 origin-top-right transition-all duration-200 ease-out z-50 ${open
-            ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 scale-95 -translate-y-2 pointer-events-none"
-          }`}
-        aria-hidden={!open}
-      >
-        <NotificationDropdown
-          onClose={() => setOpen(false)}
-          onViewAll={() => {
-            setOpen(false);
-            setActive("notification");
-          }}
-        />
-      </div>
+      {/* Dropdown container */}
+      {open && (
+        <div
+          className="absolute right-0 top-full mt-2 origin-top-right transition-all duration-200 ease-out z-50 opacity-100 scale-100 translate-y-0"
+        >
+          <NotificationDropdown
+            onClose={() => setOpen(false)}
+            onViewAll={handleViewAll}
+          />
+        </div>
+      )}
     </div>
   );
 }

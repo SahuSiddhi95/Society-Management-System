@@ -1,6 +1,7 @@
 // controllers/complaintController.js
 const Complaint = require("../models/Complaint");
-const Notification = require("../models/Notification")
+const Notification = require("../models/Notification");
+const User = require("../models/User");
 const VALID_STATUSES = ["pending", "resolved"];
 
 // ---------------------------------------------------------------------------
@@ -20,10 +21,11 @@ exports.createComplaint = async (req, res) => {
     });
     const admins = await User.find({ role: "admin" });
 
+    const flatInfo = req.user.flatNo || req.user.flatNumber ? ` (Flat ${req.user.flatNo || req.user.flatNumber})` : "";
     await Notification.insertMany(
       admins.map((admin) => ({
-        title: "New Complaint",
-        message: `${req.user.name} raised a complaint`,
+        title: `New Complaint: ${title}`,
+        message: `${req.user.name || "Resident"}${flatInfo} raised a complaint: "${title}"`,
         type: "complaint",
         user: admin._id,
       })),

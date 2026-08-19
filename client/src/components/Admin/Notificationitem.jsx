@@ -1,5 +1,5 @@
 import Icon from "./shared/Icon";
-import useNotifications from "../../hooks/useNotifications";
+import { useNotifications } from "../../../context/Notificationcontext";
 import { formatTimeAgo } from "./Timeago";
 
 const TYPE_ICON = {
@@ -20,14 +20,33 @@ const checkPath = "M20 6 9 17l-5-5";
 const trashPath =
   "M3 6h18 M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2 M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6";
 
-export default function NotificationItem({ notification }) {
-  const { markAsRead, remove } = useNotifications();
-  const isRead = !!notification.read;
+export default function NotificationItem({ notification, onClick }) {
+  const { markAsRead, removeNotification } = useNotifications();
+  const isRead = !!(notification.isRead || notification.read);
+
+  const userObj = typeof notification.user === "object" ? notification.user : null;
+  const residentName = userObj?.name || notification.senderName || notification.sender;
+  const flatNo = userObj?.flatNo || userObj?.flatNumber || notification.flatNo || notification.flatNumber;
+
+  let residentLabel = "";
+  if (residentName && flatNo) {
+    residentLabel = `${residentName} • Flat ${flatNo}`;
+  } else if (residentName) {
+    residentLabel = residentName;
+  } else if (flatNo) {
+    residentLabel = `Flat ${flatNo}`;
+  }
+
+  const handleClick = () => {
+    if (!isRead) markAsRead(notification._id);
+    if (onClick) onClick(notification);
+  };
 
   return (
     <div
-      className={`group flex gap-3 px-4 py-3 border-b border-gray-50 last:border-b-0 transition-colors ${
-        isRead ? "opacity-60 hover:opacity-100" : "bg-blue-50/60 hover:bg-blue-50"
+      onClick={handleClick}
+      className={`group flex gap-3 px-4 py-3 border-b border-gray-50 last:border-b-0 transition-colors cursor-pointer ${
+        isRead ? "opacity-75 hover:opacity-100" : "bg-indigo-50/50 hover:bg-indigo-50"
       }`}
     >
       <div className="w-9 h-9 rounded-full bg-white shadow-sm flex items-center justify-center shrink-0 relative">
@@ -37,38 +56,46 @@ export default function NotificationItem({ notification }) {
           color="#6366f1"
         />
         {!isRead && (
-          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 rounded-full ring-2 ring-white" />
+          <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-indigo-600 rounded-full ring-2 ring-white" />
         )}
       </div>
 
       <div className="flex-1 min-w-0">
+        {/* Title */}
         <p
           className={`text-sm text-gray-900 truncate ${
-            isRead ? "font-medium" : "font-bold"
+            isRead ? "font-semibold" : "font-bold text-indigo-950"
           }`}
         >
           {notification.title}
         </p>
-        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+
+        {/* Message */}
+        <p className="text-xs text-gray-600 mt-0.5 line-clamp-2 leading-relaxed">
           {notification.message}
         </p>
-        <div className="flex items-center gap-1.5 mt-1 text-[11px] text-gray-400">
-          {notification.user?.name && (
-            <>
-              <span>{notification.user.name}</span>
-              {notification.user?.flatNo && (
-                <span>· {notification.user.flatNo}</span>
-              )}
-              <span>·</span>
-            </>
+
+        {/* Resident info badge */}
+        <div className="flex items-center justify-between gap-2 mt-1.5 flex-wrap">
+          {residentLabel ? (
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-100">
+              👤 {residentLabel}
+            </span>
+          ) : (
+            <span className="text-[10px] text-gray-400 font-medium">System Alert</span>
           )}
-          <span>{formatTimeAgo(notification.createdAt)}</span>
+
+          <span className="text-[10px] text-gray-400">{formatTimeAgo(notification.createdAt)}</span>
         </div>
       </div>
 
-      <div className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+      <div
+        className="flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 self-center"
+        onClick={(e) => e.stopPropagation()}
+      >
         {!isRead && (
           <button
+            type="button"
             onClick={() => markAsRead(notification._id)}
             title="Mark as read"
             className="w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-green-50"
@@ -77,7 +104,8 @@ export default function NotificationItem({ notification }) {
           </button>
         )}
         <button
-          onClick={() => remove(notification._id)}
+          type="button"
+          onClick={() => removeNotification(notification._id)}
           title="Delete"
           className="w-6 h-6 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-red-50"
         >
