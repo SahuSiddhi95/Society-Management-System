@@ -21,13 +21,18 @@ exports.createComplaint = async (req, res) => {
     });
     const admins = await User.find({ role: "admin" });
 
-    const flatInfo = req.user.flatNo || req.user.flatNumber ? ` (Flat ${req.user.flatNo || req.user.flatNumber})` : "";
+    const residentName = req.user.name || "Resident";
+    const residentFlat = req.user.flatNo || req.user.flatNumber || "";
+    const flatInfo = residentFlat ? ` (Flat ${residentFlat})` : "";
+    
     await Notification.insertMany(
       admins.map((admin) => ({
         title: `New Complaint: ${title}`,
-        message: `${req.user.name || "Resident"}${flatInfo} raised a complaint: "${title}"`,
+        message: `${residentName}${flatInfo} raised a complaint: "${title}"`,
         type: "complaint",
         user: admin._id,
+        senderName: residentName,
+        flatNo: residentFlat,
       })),
     );
 

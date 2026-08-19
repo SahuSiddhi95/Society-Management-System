@@ -43,6 +43,21 @@ const userSchema = new mongoose.Schema(
     otpExpire: {
       type: Date,
     },
+
+    familyMembersCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5
+    },
+
+    familyMembers: [
+      {
+        name: { type: String, required: true },
+        age: { type: Number, required: true },
+        relation: { type: String, required: true },
+      }
+    ],
   },
   { timestamps: true },
 );

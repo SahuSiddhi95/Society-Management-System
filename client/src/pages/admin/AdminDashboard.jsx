@@ -8,6 +8,7 @@ import { getAllUsers } from "../../api/Admin/userApi";
 
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [stats, setStats] = useState({
     totalResidents: 0,
     totalFlats: 0,
@@ -34,17 +35,20 @@ export default function AdminDashboard() {
   }, []);
 
   return (
-    <div className="bg-gray-50 min-h-screen font-sans flex">
+    <div className="bg-gray-50 min-h-screen font-sans flex relative">
       {/* Sidebar */}
-      <Sidebar />
+      <Sidebar 
+        isMobileOpen={isMobileSidebarOpen} 
+        onCloseMobile={() => setIsMobileSidebarOpen(false)} 
+      />
 
       {/* Main */}
-      <div className="ml-56 flex-1 flex flex-col min-h-screen">
+      <div className="md:ml-56 flex-1 flex flex-col min-h-screen transition-all duration-300 w-full overflow-x-hidden">
         {/* Topbar */}
-        <Topbar users={users} />
+        <Topbar users={users} onMenuClick={() => setIsMobileSidebarOpen(true)} />
 
         {/* Dashboard Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-4 md:p-6 overflow-x-hidden w-full">
           <Outlet context={{ users, stats, setUsers, setStats }} />
         </main>
       </div>

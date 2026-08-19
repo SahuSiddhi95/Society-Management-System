@@ -37,7 +37,7 @@ const finItems = [
   { label: "Payment History", icon: icons.payment, key: "history", path: "/admin-dashboard/payment-history" },
 ];
 
-export default function Sidebar({ admin = {} }) {
+export default function Sidebar({ admin = {}, isMobileOpen, onCloseMobile }) {
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -148,235 +148,257 @@ export default function Sidebar({ admin = {} }) {
   };
 
   return (
-    <aside className="fixed top-0 left-0 h-screen w-56 bg-[#3b3fa5] flex flex-col z-20 overflow-hidden">
-      {/* Scoped custom scrollbar for the nav section only.
-          Kept as a single inline <style> block instead of a global
-          stylesheet edit so this component stays self-contained. */}
-      <style>{`
-        .sidebar-nav-scroll {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
-          overscroll-behavior: contain;
-        }
-        .sidebar-nav-scroll::-webkit-scrollbar {
-          width: 6px;
-          height: 0;
-        }
-        .sidebar-nav-scroll::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .sidebar-nav-scroll::-webkit-scrollbar-thumb {
-          background-color: rgba(255, 255, 255, 0.28);
-          border-radius: 9999px;
-        }
-        .sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
-          background-color: rgba(255, 255, 255, 0.48);
-        }
-        .sidebar-nav-scroll::-webkit-scrollbar-corner {
-          background: transparent;
-        }
-      `}</style>
+    <>
+      {/* Mobile Backdrop */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-20 md:hidden backdrop-blur-sm transition-opacity" 
+          onClick={onCloseMobile}
+        />
+      )}
+      
+      <aside className={`fixed top-0 left-0 h-screen w-56 bg-[#3b3fa5] flex flex-col z-30 overflow-hidden transition-transform duration-300 ease-in-out ${isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}>
+        {/* Scoped custom scrollbar for the nav section only.
+            Kept as a single inline <style> block instead of a global
+            stylesheet edit so this component stays self-contained. */}
+        <style>{`
+          .sidebar-nav-scroll {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+            overscroll-behavior: contain;
+          }
+          .sidebar-nav-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 0;
+          }
+          .sidebar-nav-scroll::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .sidebar-nav-scroll::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.28);
+            border-radius: 9999px;
+          }
+          .sidebar-nav-scroll::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(255, 255, 255, 0.48);
+          }
+          .sidebar-nav-scroll::-webkit-scrollbar-corner {
+            background: transparent;
+          }
+        `}</style>
 
-      {/* Logo — pinned, never scrolls */}
-      <div className="flex items-center gap-3 px-5 py-6 shrink-0">
-        <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold text-sm">
-          S
+        {/* Logo — pinned, never scrolls */}
+        <div className="flex items-center justify-between px-5 py-6 shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold text-sm">
+              S
+            </div>
+            <span className="text-white font-bold text-lg tracking-tight">SocietyOS</span>
+          </div>
+          {/* Close button for mobile */}
+          <button 
+            className="md:hidden text-white/70 hover:text-white"
+            onClick={onCloseMobile}
+          >
+            <Icon d="M18 6L6 18 M6 6l12 12" size={24} color="currentColor" />
+          </button>
         </div>
-        <span className="text-white font-bold text-lg tracking-tight">SocietyOS</span>
-      </div>
 
-      <nav
-        className="sidebar-nav-scroll flex-1 min-h-0 px-3 overflow-y-auto overflow-x-hidden scroll-smooth focus:outline-none"
-        tabIndex={0}
-      >
-        <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">
-          Main
-        </p>
-        {navItems.map((item) => {
-          let badgeValue = 0;
-          if (item.key === "Residents") badgeValue = residentsCount;
-          else if (item.key === "Complaints") badgeValue = complaintsCount;
-          else if (item.key === "maintenance") badgeValue = maintenanceCount;
-          else if (item.key === "Events") badgeValue = eventsCount;
-          else if (item.key === "notices") badgeValue = noticesCount;
-          else if (item.key === "notification") badgeValue = unreadCount;
+        <nav
+          className="sidebar-nav-scroll flex-1 min-h-0 px-3 overflow-y-auto overflow-x-hidden scroll-smooth focus:outline-none"
+          tabIndex={0}
+        >
+          <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2">
+            Main
+          </p>
+          {navItems.map((item) => {
+            let badgeValue = 0;
+            if (item.key === "Residents") badgeValue = residentsCount;
+            else if (item.key === "Complaints") badgeValue = complaintsCount;
+            else if (item.key === "maintenance") badgeValue = maintenanceCount;
+            else if (item.key === "Events") badgeValue = eventsCount;
+            else if (item.key === "notices") badgeValue = noticesCount;
+            else if (item.key === "notification") badgeValue = unreadCount;
 
-          const isActive = location.pathname === item.path || (item.path === "/admin-dashboard" && location.pathname === "/admin-dashboard/");
+            const isActive = location.pathname === item.path || (item.path === "/admin-dashboard" && location.pathname === "/admin-dashboard/");
 
-          return (
-            <Link
-              key={item.key}
-              to={item.path}
-              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl mb-1 text-sm font-medium transition-all
-                ${isActive ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}
-            >
-              <span className="flex items-center gap-3">
+            return (
+              <Link
+                key={item.key}
+                to={item.path}
+                onClick={() => onCloseMobile && onCloseMobile()}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl mb-1 text-sm font-medium transition-all
+                  ${isActive ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}
+              >
+                <span className="flex items-center gap-3">
+                  <Icon d={item.icon} size={16} color="currentColor" />
+                  {item.label}
+                </span>
+                {badgeValue > 0 && (
+                  <span className="bg-orange-400 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                    {badgeValue > 9 ? "9+" : badgeValue}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+
+          <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-5">
+            Financials
+          </p>
+          {finItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <Link
+                key={item.key}
+                to={item.path}
+                onClick={() => onCloseMobile && onCloseMobile()}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-sm font-medium transition-all
+                  ${isActive ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}
+              >
                 <Icon d={item.icon} size={16} color="currentColor" />
                 {item.label}
-              </span>
-              {badgeValue > 0 && (
-                <span className="bg-orange-400 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
-                  {badgeValue > 9 ? "9+" : badgeValue}
-                </span>
-              )}
-            </Link>
-          );
-        })}
+              </Link>
+            );
+          })}
 
-        <p className="text-white/40 text-[10px] font-semibold uppercase tracking-widest px-3 mb-2 mt-5">
-          Financials
-        </p>
-        {finItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          return (
-            <Link
-              key={item.key}
-              to={item.path}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-sm font-medium transition-all
-                ${isActive ? "bg-white/15 text-white" : "text-white/60 hover:text-white hover:bg-white/10"}`}
-            >
-              <Icon d={item.icon} size={16} color="currentColor" />
-              {item.label}
-            </Link>
-          );
-        })}
+          {/* Bottom breathing room so the last item never sits flush
+              against the scroll edge. */}
+          <div className="h-2" aria-hidden="true" />
+        </nav>
 
-        {/* Bottom breathing room so the last item never sits flush
-            against the scroll edge. */}
-        <div className="h-2" aria-hidden="true" />
-      </nav>
-
-      {/* User + Dropdown — pinned, never scrolls */}
-      <div className="relative px-3 pb-5 shrink-0" ref={ref}>
-        {/* Dropdown — floating glass card above the user row.
-            Always mounted, animated via opacity/scale/translate so
-            both open and close transition smoothly. */}
-        <div
-          className={`absolute bottom-full left-3 right-3 mb-2 origin-bottom transition-all duration-200 ease-out ${open
-            ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
-            : "opacity-0 scale-95 translate-y-2 pointer-events-none"
-            }`}
-          aria-hidden={!open}
-        >
-          <div className="bg-white/95 backdrop-blur-xl backdrop-saturate-150 rounded-2xl border border-white/60 ring-1 ring-black/5 shadow-[0_12px_32px_-8px_rgba(15,23,42,0.25)] overflow-hidden">
-            {/* User info */}
-            <div className="flex items-center gap-3 px-4 py-3.5 border-b border-gray-100 bg-gradient-to-br from-indigo-50/70 to-transparent">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
-                {initials}
+        {/* User + Dropdown — pinned, never scrolls */}
+        <div className="relative px-3 pb-5 shrink-0" ref={ref}>
+          {/* Dropdown — floating glass card above the user row.
+              Always mounted, animated via opacity/scale/translate so
+              both open and close transition smoothly. */}
+          <div
+            className={`absolute bottom-full left-3 right-3 mb-2 origin-bottom transition-all duration-200 ease-out ${open
+              ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
+              : "opacity-0 scale-95 translate-y-2 pointer-events-none"
+              }`}
+            aria-hidden={!open}
+          >
+            <div className="bg-white/95 backdrop-blur-xl backdrop-saturate-150 rounded-2xl border border-white/60 ring-1 ring-black/5 shadow-[0_12px_32px_-8px_rgba(15,23,42,0.25)] overflow-hidden">
+              {/* User info */}
+              <div className="flex items-center gap-3 px-4 py-3.5 border-b border-gray-100 bg-gradient-to-br from-indigo-50/70 to-transparent">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
+                  {initials}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {adminName}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5 truncate">
+                    {societyName}
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">
-                  {adminName}
-                </p>
-                <p className="text-xs text-gray-400 mt-0.5 truncate">
-                  {societyName}
-                </p>
-              </div>
-            </div>
 
-            {/* Menu items */}
-            <div className="p-1.5">
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  navigate("/admin-settings");
-                }}
-                className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-150 transition-colors"
-              >
-                <Icon d={icons.settings} size={16} color="currentColor" />
-                <span className="font-medium">Settings</span>
-              </button>
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  setConfirmOpen(true);
-                }}
-                className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors"
-              >
-                <Icon d={icons.logout} size={16} color="currentColor" />
-                <span className="font-medium">Logout</span>
-              </button>
+              {/* Menu items */}
+              <div className="p-1.5">
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    onCloseMobile && onCloseMobile();
+                    navigate("/admin-dashboard/settings");
+                  }}
+                  className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-150 transition-colors"
+                >
+                  <Icon d={icons.settings} size={16} color="currentColor" />
+                  <span className="font-medium">Settings</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    setConfirmOpen(true);
+                  }}
+                  className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors"
+                >
+                  <Icon d={icons.logout} size={16} color="currentColor" />
+                  <span className="font-medium">Logout</span>
+                </button>
+              </div>
             </div>
           </div>
+
+          {/* User row — click to toggle */}
+          <button
+            onClick={() => setOpen((prev) => !prev)}
+            aria-expanded={open}
+            className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/10 transition-all"
+          >
+            <div className="w-8 h-8 rounded-full bg-indigo-300 flex items-center justify-center text-indigo-900 font-bold text-xs flex-shrink-0">
+              {initials}
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <p className="text-white text-xs font-semibold truncate">{adminName}</p>
+              <p className="text-white/40 text-[10px] truncate">{societyName}</p>
+            </div>
+            <span
+              className={`transition-opacity duration-200 ${open ? "opacity-100" : "opacity-60"}`}
+            >
+              <Icon d={icons.menu} size={16} color="rgba(255,255,255,0.7)" />
+            </span>
+          </button>
         </div>
 
-        {/* User row — click to toggle */}
-        <button
-          onClick={() => setOpen((prev) => !prev)}
-          aria-expanded={open}
-          className="w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/10 transition-all"
-        >
-          <div className="w-8 h-8 rounded-full bg-indigo-300 flex items-center justify-center text-indigo-900 font-bold text-xs flex-shrink-0">
-            {initials}
-          </div>
-          <div className="flex-1 min-w-0 text-left">
-            <p className="text-white text-xs font-semibold truncate">{adminName}</p>
-            <p className="text-white/40 text-[10px] truncate">{societyName}</p>
-          </div>
-          <span
-            className={`transition-opacity duration-200 ${open ? "opacity-100" : "opacity-60"}`}
-          >
-            <Icon d={icons.menu} size={16} color="rgba(255,255,255,0.7)" />
-          </span>
-        </button>
-      </div>
-
-      {/* Logout confirmation modal */}
-      {confirmOpen && (
-        <div
-          className="fixed inset-0 z-[60] flex items-center justify-center px-4"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="logout-modal-title"
-        >
-          {/* Backdrop */}
+        {/* Logout confirmation modal */}
+        {confirmOpen && (
           <div
-            className={`absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-200 ${modalVisible ? "opacity-100" : "opacity-0"
-              }`}
-            onClick={() => setConfirmOpen(false)}
-          />
-
-          {/* Card */}
-          <div
-            className={`relative bg-white/95 backdrop-blur-xl rounded-2xl ring-1 ring-black/5 shadow-2xl w-full max-w-sm p-6 transition-all duration-200 ${modalVisible
-              ? "opacity-100 scale-100 translate-y-0"
-              : "opacity-0 scale-95 translate-y-2"
-              }`}
+            className="fixed inset-0 z-[60] flex items-center justify-center px-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="logout-modal-title"
           >
-            <div className="w-11 h-11 rounded-full bg-red-50 flex items-center justify-center mb-4">
-              <Icon d={icons.logout} size={20} color="currentColor" className="text-red-500" />
-            </div>
+            {/* Backdrop */}
+            <div
+              className={`absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-200 ${modalVisible ? "opacity-100" : "opacity-0"
+                }`}
+              onClick={() => setConfirmOpen(false)}
+            />
 
-            <h2
-              id="logout-modal-title"
-              className="text-base font-semibold text-gray-900"
+            {/* Card */}
+            <div
+              className={`relative bg-white/95 backdrop-blur-xl rounded-2xl ring-1 ring-black/5 shadow-2xl w-full max-w-sm p-6 transition-all duration-200 ${modalVisible
+                ? "opacity-100 scale-100 translate-y-0"
+                : "opacity-0 scale-95 translate-y-2"
+                }`}
             >
-              Logout of your account?
-            </h2>
-            <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
-              You will need to sign in again to access your dashboard.
-            </p>
+              <div className="w-11 h-11 rounded-full bg-red-50 flex items-center justify-center mb-4">
+                <Icon d={icons.logout} size={20} color="currentColor" className="text-red-500" />
+              </div>
 
-            <div className="flex items-center gap-3 mt-6">
-              <button
-                onClick={() => setConfirmOpen(false)}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+              <h2
+                id="logout-modal-title"
+                className="text-base font-semibold text-gray-900"
               >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setConfirmOpen(false);
-                  handleLogout();
-                }}
-                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-colors"
-              >
-                Logout
-              </button>
+                Logout of your account?
+              </h2>
+              <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
+                You will need to sign in again to access your dashboard.
+              </p>
+
+              <div className="flex items-center gap-3 mt-6">
+                <button
+                  onClick={() => setConfirmOpen(false)}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setConfirmOpen(false);
+                    handleLogout();
+                  }}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </aside>
+        )}
+      </aside>
+    </>
   );
 }

@@ -41,6 +41,7 @@ const Icon = ({ name }) => {
 
     // Extra
     check: "✅",
+    "chevron-up": "▲",
 
   };
 

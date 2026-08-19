@@ -35,28 +35,31 @@ export default function StatCards({
   const cards = [
     {
       icon: "pending",
-      iconBg: "bg-indigo-50",
+      iconBg: "bg-gradient-to-br from-indigo-100 to-indigo-200 text-indigo-700",
+      cardBg: "bg-white",
       val: fmt(pendingAmount),
       label: "Due This Month",
       chip: pendingDues.length > 0 ? `${pendingDues.length} Pending` : "All Clear",
       chipCls:
         pendingDues.length > 0
-          ? "bg-red-50 text-red-500"
-          : "bg-green-50 text-green-600",
+          ? "bg-red-50 text-red-600 border border-red-100"
+          : "bg-green-50 text-green-600 border border-green-100",
       nav: "dues",
     },
     {
       icon: "paid",
-      iconBg: "bg-green-50",
+      iconBg: "bg-gradient-to-br from-emerald-100 to-emerald-200 text-emerald-700",
+      cardBg: "bg-white",
       val: fmt(paidThisYear),
       label: "Paid This Year",
       chip: "On time",
-      chipCls: "bg-green-50 text-green-600",
+      chipCls: "bg-green-50 text-green-600 border border-green-100",
       nav: "history",
     },
     {
       icon: "complaint",
-      iconBg: "bg-amber-50",
+      iconBg: "bg-gradient-to-br from-amber-100 to-amber-200 text-amber-700",
+      cardBg: "bg-white",
       val: complaints.length,
       label: "Open Complaints",
       chip:
@@ -65,13 +68,14 @@ export default function StatCards({
           : "No complaints",
       chipCls:
         complaints.length > 0
-          ? "bg-red-50 text-red-500"
-          : "bg-green-50 text-green-600",
+          ? "bg-amber-50 text-amber-600 border border-amber-100"
+          : "bg-green-50 text-green-600 border border-green-100",
       nav: "complaint",
     },
     {
       icon: "notice",
-      iconBg: "bg-red-50",
+      iconBg: "bg-gradient-to-br from-rose-100 to-rose-200 text-rose-700",
+      cardBg: "bg-white",
       val: recentNotices?.length || 0,
       label: "Recent Notices",
       chip:
@@ -80,33 +84,36 @@ export default function StatCards({
           : "No Notices",
       chipCls:
         recentNotices?.length > 0
-          ? "bg-red-50 text-red-500"
-          : "bg-green-50 text-green-600",
+          ? "bg-blue-50 text-blue-600 border border-blue-100"
+          : "bg-slate-50 text-slate-500 border border-slate-100",
       nav: "notices",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
       {cards.map((s, i) => (
         <button
           key={i}
           onClick={() => setActiveNav(s.nav)}
-          className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col gap-3 hover:shadow-md hover:border-indigo-200 hover:-translate-y-0.5 transition-all text-left group"
+          className={`relative overflow-hidden ${s.cardBg} border border-slate-200/60 shadow-sm rounded-2xl p-5 flex flex-col gap-4 hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1 hover:border-indigo-200/60 transition-all duration-300 text-left group`}
         >
+          {/* Subtle background glow effect on hover */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/50 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          
           <div
-            className={`w-11 h-11 ${s.iconBg} rounded-xl flex items-center justify-center text-xl group-hover:scale-105 transition-transform`}
+            className={`w-12 h-12 ${s.iconBg} rounded-2xl flex items-center justify-center text-xl shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300`}
           >
             <Icon name={s.icon} />
           </div>
-          <div>
-            <div className="text-xl sm:text-2xl font-bold text-slate-800">
+          <div className="relative z-10">
+            <div className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight">
               {s.val}
             </div>
-            <div className="text-xs text-slate-400 mt-0.5">{s.label}</div>
+            <div className="text-sm font-medium text-slate-500 mt-1">{s.label}</div>
           </div>
           <span
-            className={`self-start text-xs font-semibold px-2.5 py-1 rounded-full ${s.chipCls}`}
+            className={`relative z-10 self-start text-xs font-bold px-3 py-1.5 rounded-full shadow-sm ${s.chipCls}`}
           >
             {s.chip}
           </span>

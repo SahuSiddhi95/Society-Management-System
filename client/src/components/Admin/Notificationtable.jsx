@@ -57,8 +57,8 @@ export default function NotificationTable({
       <div className="divide-y divide-gray-50">
         {notifications.map((n) => {
           const userObj = typeof n.user === "object" ? n.user : null;
-          const residentName = userObj?.name || n.senderName || n.sender;
-          const flatNo = userObj?.flatNo || userObj?.flatNumber || n.flatNo || n.flatNumber;
+          const residentName = n.senderName || n.sender || userObj?.name;
+          const flatNo = n.flatNo || n.flatNumber || userObj?.flatNo || userObj?.flatNumber;
           const isRead = !!(n.isRead || n.read);
 
           let residentLabel = "";

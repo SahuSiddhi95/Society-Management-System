@@ -30,6 +30,8 @@ const EMPTY_FORM = {
   flatNo: "",
   floor: "",
   flatType: "2BHK",
+  familyMembersCount: 0,
+  familyMembers: [],
 };
 
 export default function Residents() {
@@ -80,8 +82,28 @@ export default function Residents() {
     if (!form.password.trim()) e.password = "Password is required";
     if (!form.flatNo.trim()) e.flatNo = "Flat No is required";
     if (!form.phone.trim()) e.phone = "Phone is required";
+    
+    // Validate family members if any
+    if (form.familyMembersCount > 0) {
+      for (let i = 0; i < form.familyMembersCount; i++) {
+        const member = form.familyMembers[i];
+        if (!member || !member.name || !member.age || !member.relation) {
+          e.familyMembers = "All family member details are required";
+          break;
+        }
+      }
+    }
 
     return e;
+  };
+
+  const handleFamilyMemberChange = (index, field, value) => {
+    const newMembers = [...form.familyMembers];
+    if (!newMembers[index]) {
+      newMembers[index] = { name: "", age: "", relation: "" };
+    }
+    newMembers[index][field] = value;
+    setForm({ ...form, familyMembers: newMembers });
   };
 
   const handleSave = async () => {
@@ -103,6 +125,8 @@ export default function Residents() {
         flatNo: form.flatNo,
         floor: Number(form.floor),
         flatType: form.flatType,
+        familyMembersCount: Number(form.familyMembersCount),
+        familyMembers: form.familyMembers.slice(0, form.familyMembersCount),
         role: "user",
       });
 
@@ -531,6 +555,73 @@ export default function Residents() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Family Members Section */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                      Members in Your Family
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={form.familyMembersCount}
+                        onChange={(e) => {
+                          const count = Number(e.target.value);
+                          setForm({ ...form, familyMembersCount: count });
+                        }}
+                        className={`appearance-none w-full px-3 py-2 rounded-lg border text-sm text-gray-800 outline-none transition-all border-gray-200 bg-gray-50 focus:bg-white focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100`}
+                      >
+                        <option value={0}>0</option>
+                        <option value={1}>1</option>
+                        <option value={2}>2</option>
+                        <option value={3}>3</option>
+                        <option value={4}>4</option>
+                        <option value={5}>5</option>
+                      </select>
+                      <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                  </div>
+
+                  {form.familyMembersCount > 0 && (
+                    <div className="space-y-4 pt-2 border-t border-gray-100">
+                      <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Family Member Details</h4>
+                      {errors.familyMembers && (
+                        <p className="text-xs text-red-500 mb-2">{errors.familyMembers}</p>
+                      )}
+                      
+                      {[...Array(form.familyMembersCount)].map((_, i) => (
+                        <div key={i} className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-gray-50 rounded-lg border border-gray-100">
+                          <div>
+                            <input
+                              type="text"
+                              placeholder="Name"
+                              value={form.familyMembers[i]?.name || ""}
+                              onChange={(e) => handleFamilyMemberChange(i, "name", e.target.value)}
+                              className="w-full px-2 py-1.5 rounded-md border border-gray-200 text-xs outline-none focus:border-indigo-400"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="number"
+                              placeholder="Age"
+                              value={form.familyMembers[i]?.age || ""}
+                              onChange={(e) => handleFamilyMemberChange(i, "age", e.target.value)}
+                              className="w-full px-2 py-1.5 rounded-md border border-gray-200 text-xs outline-none focus:border-indigo-400"
+                            />
+                          </div>
+                          <div>
+                            <input
+                              type="text"
+                              placeholder="Relation"
+                              value={form.familyMembers[i]?.relation || ""}
+                              onChange={(e) => handleFamilyMemberChange(i, "relation", e.target.value)}
+                              className="w-full px-2 py-1.5 rounded-md border border-gray-200 text-xs outline-none focus:border-indigo-400"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                 </div>
                 {/* footer */}
                 <div className="px-6 pb-5 flex gap-3">
@@ -691,6 +782,29 @@ export default function Residents() {
                       </div>
                     ))}
                   </div>
+                  {viewResident.familyMembers && viewResident.familyMembers.length > 0 && (
+                    <div className="mt-6 border-t border-gray-100 pt-4">
+                      <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3">Family Members ({viewResident.familyMembersCount})</h4>
+                      <div className="space-y-2">
+                        {viewResident.familyMembers.map((member, idx) => (
+                          <div key={idx} className="flex items-center justify-between p-3 rounded-lg bg-indigo-50 border border-indigo-100/50">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-xs font-bold text-indigo-600 shadow-sm">
+                                {member.name.substring(0, 2).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="text-sm font-bold text-gray-800">{member.name}</p>
+                                <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">{member.relation}</p>
+                              </div>
+                            </div>
+                            <span className="text-xs font-bold text-gray-400 bg-white px-2 py-1 rounded-md shadow-sm border border-gray-100">
+                              {member.age} yrs
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="px-6 pb-5 flex gap-2">
                   <button

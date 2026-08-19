@@ -10,16 +10,12 @@ export default function Sidebar({
   events = [],
   dues = [],
   transactions = [],
-  // NEW: optional props for mobile drawer control (wired up from Topbar's
-  // hamburger button). Both default to safe no-ops so existing usages of
-  // <Sidebar /> that don't pass these keep working exactly as before.
   isOpen = false,
   onClose = () => { },
 }) {
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  // NEW: icon-only collapse mode, only toggleable on tablet widths (md–lg)
   const [collapsed, setCollapsed] = useState(false);
   const ref = useRef(null);
   const { unreadCount } = useNotifications();
@@ -32,7 +28,6 @@ export default function Sidebar({
     (t) => t.status === "Success" || t.status === "paid" || t.status === "Paid"
   ).length;
 
-  console.log("recentNotices", recentNotices)
   useEffect(() => {
     function handleClickOutside(e) {
       if (ref.current && !ref.current.contains(e.target)) {
@@ -43,7 +38,6 @@ export default function Sidebar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close the profile dropdown with Escape too
   useEffect(() => {
     if (!open) return;
     function handleKeyDown(e) {
@@ -53,7 +47,6 @@ export default function Sidebar({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open]);
 
-  // Drives the enter/exit transition for the logout confirm modal
   useEffect(() => {
     if (confirmOpen) {
       const id = requestAnimationFrame(() => setModalVisible(true));
@@ -61,7 +54,6 @@ export default function Sidebar({
     }
   }, [confirmOpen]);
 
-  // Allow closing the modal with Escape
   useEffect(() => {
     if (!confirmOpen) return;
     function handleKeyDown(e) {
@@ -71,7 +63,6 @@ export default function Sidebar({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [confirmOpen]);
 
-  // NEW: close the mobile drawer with Escape
   useEffect(() => {
     if (!isOpen) return;
     function handleKeyDown(e) {
@@ -86,16 +77,11 @@ export default function Sidebar({
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("role");
-
-    // Resident sidebar always returns to the resident login.
-    // Add role-specific branches here if this sidebar is ever
-    // shared across roles (e.g. admin -> /admin-login).
     navigate("/user-login");
   };
 
   const location = useLocation();
 
-  // User initials
   const initials =
     user?.name
       ?.split(" ")
@@ -106,7 +92,7 @@ export default function Sidebar({
 
   return (
     <>
-      {/* Mobile backdrop — only rendered/visible below md, sits under the sidebar */}
+      {/* Mobile backdrop */}
       <div
         className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300 ease-in-out ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           }`}
@@ -116,42 +102,46 @@ export default function Sidebar({
 
       <aside
         className={`
-          flex flex-col fixed inset-y-0 left-0 z-50 shadow-xl bg-indigo-600
+          flex flex-col fixed inset-y-0 left-0 z-50 shadow-[4px_0_24px_rgba(0,0,0,0.1)] bg-gradient-to-b from-indigo-700 to-indigo-950
           transition-all duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0
           ${collapsed ? "w-20" : "w-60"} lg:w-60
         `}
       >
+        {/* Decorative background elements */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-50">
+          <div className="absolute -top-20 -left-20 w-64 h-64 bg-indigo-500/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-40 -right-20 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl" />
+        </div>
+
         {/* Logo */}
-        <div className="flex items-center gap-2.5 px-5 py-6 border-b border-white/10">
-          <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center font-bold text-indigo-600 text-base shrink-0">
+        <div className="flex items-center gap-3 px-5 py-6 border-b border-white/10 relative z-10">
+          <div className="w-9 h-9 bg-gradient-to-br from-white to-indigo-50 rounded-xl flex items-center justify-center font-black text-indigo-700 text-lg shrink-0 shadow-sm shadow-black/20">
             S
           </div>
           {(!collapsed || isOpen) && (
-            <span className="text-white font-bold text-lg tracking-tight lg:inline hidden md:hidden lg:block">
+            <span className="text-white font-extrabold text-xl tracking-tight lg:inline hidden md:hidden lg:block drop-shadow-sm">
               SocietyOS
             </span>
           )}
-          {/* On mobile the drawer is always full-width, so always show the label there */}
-          <span className="text-white font-bold text-lg tracking-tight md:hidden">
+          <span className="text-white font-extrabold text-xl tracking-tight md:hidden drop-shadow-sm">
             SocietyOS
           </span>
           {!collapsed && (
-            <span className="text-white font-bold text-lg tracking-tight hidden md:inline lg:hidden">
+            <span className="text-white font-extrabold text-xl tracking-tight hidden md:inline lg:hidden drop-shadow-sm">
               SocietyOS
             </span>
           )}
 
-          {/* NEW: tablet-only collapse toggle */}
           <button
             type="button"
             onClick={() => setCollapsed((prev) => !prev)}
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-expanded={!collapsed}
-            className="hidden md:flex lg:hidden ml-auto w-6 h-6 items-center justify-center rounded-md text-white/60 hover:bg-white/10 hover:text-white transition-colors shrink-0"
+            className="hidden md:flex lg:hidden ml-auto w-7 h-7 items-center justify-center rounded-lg bg-white/10 text-white/80 hover:bg-white/20 hover:text-white transition-colors shrink-0 shadow-sm"
           >
             <span
-              className={`text-xs transition-transform duration-200 ${collapsed ? "rotate-180" : ""}`}
+              className={`text-sm font-bold transition-transform duration-200 ${collapsed ? "rotate-180" : ""}`}
             >
               ‹
             </span>
@@ -159,9 +149,9 @@ export default function Sidebar({
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-5 flex flex-col gap-1 overflow-y-auto overflow-x-hidden">
+        <nav className="flex-1 px-4 py-6 flex flex-col gap-1.5 overflow-y-auto overflow-x-hidden relative z-10 custom-scrollbar">
           <p
-            className={`text-[10px] font-semibold tracking-widest text-white/40 uppercase px-2.5 pt-1 pb-1 ${collapsed ? "md:text-center lg:text-left" : ""
+            className={`text-[10px] font-bold tracking-[0.2em] text-indigo-200/60 uppercase px-2 mb-1 ${collapsed ? "md:text-center lg:text-left" : ""
               }`}
           >
             {collapsed ? <span className="md:hidden lg:inline">Main</span> : "Main"}
@@ -181,19 +171,19 @@ export default function Sidebar({
                 to={item.path}
                 onClick={onClose}
                 title={item.label}
-                className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${collapsed ? "md:justify-center lg:justify-between" : ""
+                className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${collapsed ? "md:justify-center lg:justify-between" : ""
                   } ${isActive
-                    ? "bg-white text-indigo-600 font-semibold"
-                    : "text-white/80 hover:bg-white/10"
+                    ? "bg-white/15 text-white font-bold backdrop-blur-md shadow-sm border border-white/10 ring-1 ring-white/5"
+                    : "text-indigo-100/80 hover:bg-white/10 hover:text-white"
                   }`}
               >
-                <div className="flex items-center gap-3">
-                  <Icon name={item.icon} />
+                <div className="flex items-center gap-3.5">
+                  <span className={isActive ? "text-white" : "text-indigo-200"}><Icon name={item.icon} /></span>
                   <span className={collapsed ? "md:hidden lg:inline" : ""}>{item.label}</span>
                 </div>
                 {item.badgeCount > 0 && (
                   <span
-                    className={`bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full ${collapsed ? "md:hidden lg:inline-block" : ""
+                    className={`bg-rose-500 text-white font-bold text-[10px] px-2 py-0.5 rounded-full shadow-sm ${collapsed ? "md:hidden lg:inline-block" : ""
                       }`}
                   >
                     {item.badgeCount}
@@ -204,7 +194,7 @@ export default function Sidebar({
           })}
           
           <p
-            className={`text-[10px] font-semibold tracking-widest text-white/40 uppercase px-2.5 pt-4 pb-1 ${collapsed ? "md:text-center lg:text-left" : ""
+            className={`text-[10px] font-bold tracking-[0.2em] text-indigo-200/60 uppercase px-2 mt-4 mb-1 ${collapsed ? "md:text-center lg:text-left" : ""
               }`}
           >
             {collapsed ? <span className="md:hidden lg:inline">Financials</span> : "Financials"}
@@ -222,19 +212,19 @@ export default function Sidebar({
                 to={item.path}
                 onClick={onClose}
                 title={item.label}
-                className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${collapsed ? "md:justify-center lg:justify-between" : ""
+                className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all duration-200 ${collapsed ? "md:justify-center lg:justify-between" : ""
                   } ${isActive
-                    ? "bg-white text-indigo-600 font-semibold"
-                    : "text-white/80 hover:bg-white/10"
+                    ? "bg-white/15 text-white font-bold backdrop-blur-md shadow-sm border border-white/10 ring-1 ring-white/5"
+                    : "text-indigo-100/80 hover:bg-white/10 hover:text-white"
                   }`}
               >
-                <div className="flex items-center gap-3">
-                  <Icon name={item.icon} />
+                <div className="flex items-center gap-3.5">
+                  <span className={isActive ? "text-white" : "text-indigo-200"}><Icon name={item.icon} /></span>
                   <span className={collapsed ? "md:hidden lg:inline" : ""}>{item.label}</span>
                 </div>
                 {item.badgeCount > 0 && (
                   <span
-                    className={`bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full ${collapsed ? "md:hidden lg:inline-block" : ""
+                    className={`bg-rose-500 text-white font-bold text-[10px] px-2 py-0.5 rounded-full shadow-sm ${collapsed ? "md:hidden lg:inline-block" : ""
                       }`}
                   >
                     {item.badgeCount}
@@ -246,54 +236,56 @@ export default function Sidebar({
         </nav>
 
         {/* User + Dropdown */}
-        <div className="relative p-3 border-t border-white/10" ref={ref}>
-          {/* Dropdown — floating glass card above the user bar.
-              Always mounted, animated purely via opacity/scale/translate
-              so open + close both transition smoothly. */}
+        <div className="relative z-20 p-4 border-t border-white/10 bg-indigo-950/20 backdrop-blur-md" ref={ref}>
           <div
-            className={`absolute bottom-full left-3 right-3 mb-2 origin-bottom transition-all duration-200 ease-out ${open
+            className={`absolute bottom-full left-4 right-4 mb-3 origin-bottom transition-all duration-200 ease-out ${open
               ? "opacity-100 scale-100 translate-y-0 pointer-events-auto"
               : "opacity-0 scale-95 translate-y-2 pointer-events-none"
               }`}
             aria-hidden={!open}
           >
-            <div className="bg-white/95 backdrop-blur-xl backdrop-saturate-150 rounded-2xl border border-white/60 ring-1 ring-black/5 shadow-[0_12px_32px_-8px_rgba(15,23,42,0.25)] overflow-hidden">
+            <div className="bg-white/95 backdrop-blur-xl backdrop-saturate-150 rounded-2xl border border-white/60 ring-1 ring-black/5 shadow-2xl overflow-hidden">
               {/* User info */}
-              <div className="flex items-center gap-3 px-4 py-3.5 border-b border-gray-100 bg-gradient-to-br from-indigo-50/70 to-transparent">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm shrink-0">
+              <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-100 bg-gradient-to-br from-indigo-50/70 to-transparent">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white font-bold text-sm shadow-md shrink-0">
                   {initials}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">
+                  <p className="text-sm font-bold text-gray-900 truncate">
                     {user?.name}
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs font-medium text-gray-500 mt-0.5">
                     {user?.flatNo} · Resident
                   </p>
                 </div>
               </div>
 
               {/* Menu items */}
-              <div className="p-1.5">
+              <div className="p-2 flex flex-col gap-1">
                 <button
                   onClick={() => {
                     setOpen(false);
                     onClose();
-                    navigate("/settings");
+                    navigate("/user-dashboard/settings");
                   }}
-                  className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm text-gray-700 hover:bg-gray-100 active:bg-gray-150 transition-colors"
+                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:text-indigo-700 hover:bg-indigo-50/50 active:bg-indigo-100/50 transition-all group"
                 >
-                  <Icon name="notice" className="text-gray-400" />
-                  <span className="font-medium">Settings</span>
+                  <span className="text-slate-400 group-hover:text-indigo-500 transition-colors text-lg flex items-center justify-center">
+                    <Icon name="settings" />
+                  </span>
+                  <span>Settings</span>
                 </button>
                 <button
                   onClick={() => {
                     setOpen(false);
                     setConfirmOpen(true);
                   }}
-                  className="flex items-center gap-2.5 w-full px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors"
+                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50/80 active:bg-rose-100 transition-all group"
                 >
-                  <span className="font-medium">Logout</span>
+                  <span className="text-rose-400 group-hover:text-rose-500 group-hover:scale-110 transition-all text-lg flex items-center justify-center">
+                    🚪
+                  </span>
+                  <span>Logout</span>
                 </button>
               </div>
             </div>
@@ -304,23 +296,22 @@ export default function Sidebar({
             onClick={() => setOpen((prev) => !prev)}
             aria-expanded={open}
             aria-haspopup="true"
-            className={`flex items-center gap-2.5 w-full bg-white/10 rounded-xl px-3 py-2.5 hover:bg-white/20 transition-colors ${collapsed ? "md:justify-center lg:justify-start" : ""
+            className={`flex items-center gap-3 w-full bg-white/10 backdrop-blur-md rounded-2xl px-3 py-3 border border-white/10 hover:bg-white/20 transition-all shadow-sm ${collapsed ? "md:justify-center lg:justify-start" : ""
               }`}
           >
-            <div className="w-9 h-9 rounded-full bg-indigo-400 border-2 border-white/30 flex items-center justify-center text-white font-bold text-sm shrink-0">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-300 to-indigo-500 border border-white/30 flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-inner">
               {initials}
             </div>
             <div
               className={`flex-1 min-w-0 text-left ${collapsed ? "md:hidden lg:block" : ""}`}
             >
-              <p className="text-white text-sm font-semibold truncate">
+              <p className="text-white text-sm font-bold truncate">
                 {user?.name}
               </p>
-              <p className="text-white/50 text-xs">{user?.flatNo} · Resident</p>
+              <p className="text-indigo-200 text-[10px] font-semibold uppercase tracking-wider mt-0.5 truncate">{user?.flatNo} · Resident</p>
             </div>
-            {/* Chevron flips when open */}
             <span
-              className={`text-white/50 text-base transition-transform duration-200 ${open ? "rotate-180" : ""
+              className={`text-indigo-200 text-sm transition-transform duration-300 ${open ? "rotate-180 text-white" : ""
                 } ${collapsed ? "md:hidden lg:inline" : ""}`}
             >
               <Icon name="chevron-up" />
@@ -328,62 +319,63 @@ export default function Sidebar({
           </button>
         </div>
 
-        {/* Logout confirmation modal */}
-        {confirmOpen && (
+      </aside>
+
+      {/* Logout confirmation modal - Rendered outside of aside to fix CSS transform context */}
+      {confirmOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="logout-modal-title"
+        >
           <div
-            className="fixed inset-0 z-[60] flex items-center justify-center px-4"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="logout-modal-title"
+            className={`absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity duration-300 ${modalVisible ? "opacity-100" : "opacity-0"
+              }`}
+            onClick={() => setConfirmOpen(false)}
+          />
+
+          <div
+            className={`relative bg-white/95 backdrop-blur-xl rounded-3xl ring-1 ring-black/5 shadow-2xl w-full max-w-sm p-7 transition-all duration-300 ease-out ${modalVisible
+              ? "opacity-100 scale-100 translate-y-0"
+              : "opacity-0 scale-95 translate-y-4"
+              }`}
           >
-            {/* Backdrop */}
-            <div
-              className={`absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-200 ${modalVisible ? "opacity-100" : "opacity-0"
-                }`}
-              onClick={() => setConfirmOpen(false)}
-            />
+            <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center mb-5 text-2xl shadow-sm">
+              🚪
+            </div>
 
-            {/* Card */}
-            <div
-              className={`relative bg-white/95 backdrop-blur-xl rounded-2xl ring-1 ring-black/5 shadow-2xl w-full max-w-sm p-6 transition-all duration-200 ${modalVisible
-                ? "opacity-100 scale-100 translate-y-0"
-                : "opacity-0 scale-95 translate-y-2"
-                }`}
+            <h2
+              id="logout-modal-title"
+              className="text-lg font-bold text-gray-900"
             >
-              <div className="w-11 h-11 rounded-full bg-red-50 flex items-center justify-center mb-4"></div>
+              Logout of your account?
+            </h2>
+            <p className="text-sm text-gray-500 mt-2 leading-relaxed">
+              You will need to sign in again to access your resident dashboard and payments.
+            </p>
 
-              <h2
-                id="logout-modal-title"
-                className="text-base font-semibold text-gray-900"
+            <div className="flex items-center gap-3 mt-8">
+              <button
+                onClick={() => setConfirmOpen(false)}
+                className="flex-1 px-4 py-3 rounded-xl text-sm font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
               >
-                Logout of your account?
-              </h2>
-              <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
-                You will need to sign in again to access your dashboard.
-              </p>
-
-              <div className="flex items-center gap-3 mt-6">
-                <button
-                  onClick={() => setConfirmOpen(false)}
-                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    setConfirmOpen(false);
-                    onClose();
-                    handleLogout();
-                  }}
-                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmOpen(false);
+                  onClose();
+                  handleLogout();
+                }}
+                className="flex-1 px-4 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 shadow-md shadow-rose-500/20 transition-all"
+              >
+                Logout
+              </button>
             </div>
           </div>
-        )}
-      </aside>
+        </div>
+      )}
     </>
   );
 }

@@ -23,6 +23,7 @@ export default function SocietyDashboard() {
   const [dues, setDues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dashError, setDashError] = useState(null);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   // ── Fetch notices separately (they don't change often) ──────────────────
   useEffect(() => {
@@ -125,7 +126,7 @@ export default function SocietyDashboard() {
 
   // ── Dashboard UI ─────────────────────────────────────────────────────────
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
+    <div className="flex min-h-screen bg-slate-50 font-sans relative">
       {/* Sidebar */}
       <Sidebar
         user={user}
@@ -134,15 +135,17 @@ export default function SocietyDashboard() {
         events={events}
         dues={dues}
         transactions={transactions}
+        isOpen={isMobileSidebarOpen}
+        onClose={() => setIsMobileSidebarOpen(false)}
       />
 
       {/* Main */}
-      <div className="md:ml-60 flex-1 flex flex-col min-h-screen">
+      <div className="md:ml-60 flex-1 flex flex-col min-h-screen transition-all duration-300 w-full overflow-x-hidden">
         {/* Topbar */}
-        <Topbar user={user} />
+        <Topbar user={user} onMenuClick={() => setIsMobileSidebarOpen(true)} />
 
         {/* Content */}
-        <main className="p-4 sm:p-6 lg:p-8 flex flex-col gap-5 lg:gap-6">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 flex flex-col gap-5 lg:gap-6 overflow-x-hidden w-full">
           <Outlet context={contextProps} />
         </main>
       </div>

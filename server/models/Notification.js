@@ -25,6 +25,14 @@ const notificationSchema = new mongoose.Schema(
       default: "general",
     },
 
+    senderName: {
+      type: String,
+    },
+
+    flatNo: {
+      type: String,
+    },
+
     // "read" (not "isRead") — used consistently in all controllers
     read: {
       type: Boolean,

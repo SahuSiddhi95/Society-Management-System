@@ -13,6 +13,8 @@ exports.createUser = async (req, res) => {
       flatNo,
       floor,
       flatType,
+      familyMembersCount,
+      familyMembers,
     } = req.body;
 
     // Check existing user
@@ -48,6 +50,10 @@ exports.createUser = async (req, res) => {
       flatNo,
       floor,
       flatType,
+
+      // Family Details
+      familyMembersCount: familyMembersCount || 0,
+      familyMembers: familyMembers || [],
     });
 
     res.status(201).json({

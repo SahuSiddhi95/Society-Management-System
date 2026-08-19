@@ -37,13 +37,18 @@
 
         const admins = await User.find({ role: "admin" });
         if (admins.length > 0) {
-          const flatInfo = req.user.flatNo || req.user.flatNumber ? ` (Flat ${req.user.flatNo || req.user.flatNumber})` : "";
+          const residentName = req.user.name || "Resident";
+          const residentFlat = req.user.flatNo || req.user.flatNumber || "";
+          const flatInfo = residentFlat ? ` (Flat ${residentFlat})` : "";
+          
           await Notification.insertMany(
             admins.map((admin) => ({
               title: "Maintenance Payment Received",
-              message: `${req.user.name || "Resident"}${flatInfo} paid ${maintenance.month} maintenance (₹${maintenance.amount})`,
+              message: `${residentName}${flatInfo} paid ${maintenance.month} maintenance (₹${maintenance.amount})`,
               type: "maintenance",
               user: admin._id,
+              senderName: residentName,
+              flatNo: residentFlat,
             }))
           );
         }
