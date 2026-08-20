@@ -37,7 +37,7 @@ const finItems = [
   { label: "Payment History", icon: icons.payment, key: "history", path: "/admin-dashboard/payment-history" },
 ];
 
-export default function Sidebar({ admin = {}, isMobileOpen, onCloseMobile }) {
+export default function Sidebar({ admin = {}, isMobileOpen, onCloseMobile, society }) {
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -92,7 +92,7 @@ export default function Sidebar({ admin = {}, isMobileOpen, onCloseMobile }) {
   }, []);
 
   const adminName = admin?.name || "Admin";
-  const societyName = admin?.society || "Shree Ram Residency";
+  const societyName = society?.societyName || admin?.society || "SocietyOS";
   const initials =
     adminName
       .split(" ")
@@ -192,7 +192,7 @@ export default function Sidebar({ admin = {}, isMobileOpen, onCloseMobile }) {
             <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center text-white font-bold text-sm">
               S
             </div>
-            <span className="text-white font-bold text-lg tracking-tight">SocietyOS</span>
+            <span className="text-white font-bold text-lg tracking-tight truncate max-w-[120px]">{society?.societyName || "SocietyOS"}</span>
           </div>
           {/* Close button for mobile */}
           <button 

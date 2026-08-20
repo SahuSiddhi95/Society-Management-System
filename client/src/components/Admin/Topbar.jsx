@@ -1,7 +1,7 @@
 import NotificationBell from "./NotificationBell";
 import Icon from "../../assets/icons";
 
-export default function Topbar({ user, onMenuClick }) {
+export default function Topbar({ user, users, society, onMenuClick }) {
   // Current Date
   const today = new Date().toLocaleDateString("en-IN", {
     weekday: "long",
@@ -52,7 +52,7 @@ export default function Topbar({ user, onMenuClick }) {
           <p className="text-xs text-slate-500 truncate mt-0.5">
             {today}
             {" • "}
-            {user?.societyName || "Society Management System"}
+            {society?.societyName || user?.societyName || "Society Management System"}
           </p>
         </div>
       </div>

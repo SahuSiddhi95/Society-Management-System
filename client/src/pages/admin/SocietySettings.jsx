@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 import { getSocietyConfig, updateSocietyConfig } from "../../api/Admin/societyApi";
 import { toast } from "react-hot-toast";
 
 export default function SocietySettings() {
+  const { setSociety } = useOutletContext();
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -31,6 +33,7 @@ export default function SocietySettings() {
       const updated = await updateSocietyConfig(formData);
       setConfig(updated);
       setFormData(updated);
+      if (setSociety) setSociety(updated);
       setEditMode(false);
       toast.success("Society configuration updated successfully.");
     } catch (error) {

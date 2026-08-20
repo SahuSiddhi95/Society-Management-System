@@ -4,6 +4,7 @@ const ReminderLog = require("../models/ReminderLog");
 const emailService = require("../services/emailService");
 const smsService = require("../services/smsService");
 const notificationService = require("../services/notificationService");
+const Transaction = require("../models/Transaction");
 exports.createMaintenance = async (req, res) => {
   try {
     const maintenance = await Maintenance.create(req.body);
@@ -36,16 +37,36 @@ exports.getAllMaintenance = async (req, res) => {
 
 exports.getPaymentHistory = async (req, res) => {
   try {
-    // NOTE: enum in Maintenance model uses "Paid" (capital P) — must match exactly
     const payments = await Maintenance.find({
       status: "Paid",
     })
       .populate("resident", "name flatNo email")
-      .sort({ updatedAt: -1 });
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    const maintenanceIds = payments.map(p => p._id);
+    const transactions = await Transaction.find({ maintenance: { $in: maintenanceIds } }).lean();
+
+    const populatedPayments = payments.map(p => {
+      const txn = transactions.find(t => t.maintenance.toString() === p._id.toString());
+      if (txn) {
+        return {
+          ...p,
+          paymentMethod: p.paymentMethod || txn.method,
+          receiptNumber: p.receiptNumber || txn.transactionId,
+          paymentProof: p.paymentProof || txn.paymentProof,
+          paymentDate: p.paidAt || txn.createdAt
+        };
+      }
+      return {
+        ...p,
+        paymentDate: p.paidAt || p.updatedAt
+      };
+    });
 
     res.status(200).json({
       success: true,
-      payments,
+      payments: populatedPayments,
     });
   } catch (error) {
     res.status(500).json({
@@ -72,6 +93,9 @@ exports.getMyDues = async (req, res) => {
 
 exports.updateMaintenance = async (req, res) => {
   try {
+    if (req.body.status === "Paid" && !req.body.paidAt) {
+      req.body.paidAt = new Date();
+    }
     const maintenance = await Maintenance.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -121,7 +145,8 @@ exports.generateDues = async (req, res) => {
       const exists = await Maintenance.findOne({
         resident: resident._id,
         month,
-        year
+        year,
+        category
       });
 
       if (!exists) {
@@ -161,7 +186,7 @@ exports.generateDues = async (req, res) => {
     });
 
   } catch (err) {
-    res.status(500).json(err);
+    res.status(500).json({ success: false, message: err.message || "Failed to generate dues" });
   }
 };
 

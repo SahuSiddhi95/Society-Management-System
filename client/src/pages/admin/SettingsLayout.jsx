@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useOutletContext } from "react-router-dom";
 
 export default function SettingsLayout() {
   const tabs = [
@@ -7,6 +7,8 @@ export default function SettingsLayout() {
     { name: "Profile", path: "profile" },
     { name: "Security", path: "security" },
   ];
+
+  const context = useOutletContext();
 
   return (
     <div className="p-4 sm:p-8 max-w-7xl mx-auto h-full flex flex-col md:flex-row gap-8">
@@ -34,7 +36,7 @@ export default function SettingsLayout() {
 
       {/* Main Content Area for the selected setting */}
       <div className="flex-1 min-w-0">
-        <Outlet />
+        <Outlet context={context} />
       </div>
     </div>
   );

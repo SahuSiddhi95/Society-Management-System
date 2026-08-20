@@ -26,6 +26,10 @@ const maintenanceSchema = new mongoose.Schema({
   
   description: String,
 
+  paymentMethod: String,
+  receiptNumber: String,
+  paymentProof: String,
+
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

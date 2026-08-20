@@ -46,7 +46,7 @@ const EmptyState = () => (
   </div>
 );
 
-const MaintenanceTable = ({ maintenance, loading, onEdit, onRefresh }) => {
+const MaintenanceTable = ({ maintenance, loading, onEdit, onRecordPayment, onRefresh }) => {
   const [search, setSearch] = useState("");
   const [monthFilter, setMonthFilter] = useState("All");
   const [yearFilter, setYearFilter] = useState("All");
@@ -227,6 +227,15 @@ const MaintenanceTable = ({ maintenance, loading, onEdit, onRefresh }) => {
                     <td className="px-6 py-5"><StatusBadge status={m.status} /></td>
                     <td className="px-8 py-5">
                       <div className="flex items-center justify-end gap-2 opacity-50 group-hover:opacity-100 transition-opacity">
+                        {m.status !== "Paid" && (
+                          <button
+                            onClick={() => onRecordPayment?.(m)}
+                            className="px-3 py-1.5 h-9 rounded-xl bg-green-50 border border-green-200 text-green-700 text-xs font-bold flex items-center justify-center hover:bg-green-100 hover:border-green-300 shadow-sm transition-all"
+                            title="Record Manual Payment"
+                          >
+                            Record Pay
+                          </button>
+                        )}
                         <button
                           onClick={() => onEdit(m)}
                           className="w-9 h-9 rounded-xl bg-white border border-gray-200 text-gray-500 flex items-center justify-center hover:border-indigo-200 hover:text-indigo-600 hover:bg-indigo-50 shadow-sm transition-all"

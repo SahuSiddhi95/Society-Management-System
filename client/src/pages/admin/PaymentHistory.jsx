@@ -15,6 +15,7 @@ import {
   ChevronRight,
   ArrowUpDown,
 } from "lucide-react";
+import PrintableReceipt from "../../components/Admin/PrintableReceipt";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -42,6 +43,7 @@ const PaymentHistory = () => {
 
   // View details modal
   const [selectedPayment, setSelectedPayment] = useState(null);
+  const [printingPayment, setPrintingPayment] = useState(null);
 
   useEffect(() => {
     fetchPayments();
@@ -196,11 +198,24 @@ const PaymentHistory = () => {
     return MONTH_NAMES[idx] || month;
   };
 
-  const handlePrint = () => window.print();
+  useEffect(() => {
+    if (printingPayment) {
+      const timer = setTimeout(() => {
+        window.print();
+        setPrintingPayment(null);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [printingPayment]);
+
+  const handlePrint = (payment) => {
+    setPrintingPayment(payment);
+  };
 
   return (
     <>
-          {/* Page Header */}
+      <div className={printingPayment ? "hidden print:hidden" : "block"}>
+        {/* Page Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
               <h1 className="text-2xl font-bold text-gray-800 tracking-tight">
@@ -415,7 +430,7 @@ const PaymentHistory = () => {
                               >
                                 <Download className="w-4 h-4" />
                               </ActionButton>
-                              <ActionButton title="Print Receipt" onClick={handlePrint}>
+                              <ActionButton title="Print Receipt" onClick={() => handlePrint(payment)}>
                                 <Printer className="w-4 h-4" />
                               </ActionButton>
                             </div>
@@ -477,6 +492,8 @@ const PaymentHistory = () => {
           monthLabel={monthLabel}
         />
       )}
+      </div>
+      <PrintableReceipt payment={printingPayment} />
     </>
   );
 };
@@ -570,9 +587,29 @@ const PaymentDetailsModal = ({ payment, onClose, formatCurrency, formatDate, mon
         <DetailRow label="Amount Paid" value={formatCurrency(payment.amount)} />
         <DetailRow label="Month" value={monthLabel(payment.month)} />
         <DetailRow label="Year" value={payment.year} />
-        <DetailRow label="Payment Date" value={formatDate(payment.paymentDate)} />
+        <DetailRow label="Payment Date" value={formatDate(payment.paidAt || payment.paymentDate)} />
         <DetailRow label="Payment Method" value={payment.paymentMethod || "—"} />
         <DetailRow label="Receipt Number" value={payment.receiptNumber || "—"} />
+        {payment.paymentProof && (
+          <div className="flex flex-col gap-2 p-3 rounded-xl bg-gray-50 mt-4">
+            <span className="text-xs font-semibold text-gray-400">Payment Proof</span>
+            <a 
+              href={payment.paymentProof} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="mt-1 relative group block w-full aspect-video rounded-lg overflow-hidden border border-gray-200 bg-white hover:border-indigo-300 transition-colors"
+            >
+              <img 
+                src={payment.paymentProof} 
+                alt="Payment Proof" 
+                className="w-full h-full object-contain"
+              />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-white text-sm font-semibold bg-black/60 px-3 py-1 rounded-full backdrop-blur-sm">Click to View Full</span>
+              </div>
+            </a>
+          </div>
+        )}
         <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50">
           <span className="text-xs font-semibold text-gray-400">Status</span>
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">

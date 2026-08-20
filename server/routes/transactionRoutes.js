@@ -3,6 +3,7 @@
 
     const {
       payMaintenance,
+      recordManualPayment,
       getMyTransactions,
       getAllTransactions,
       getTransactionStats,
@@ -11,8 +12,11 @@
     const {protect} = require("../middleware/authMiddleware");
 
     const {adminOnly} = require("../middleware/roleMiddleware");
+    const upload = require("../middleware/upload");
 
     router.post("/pay", protect, payMaintenance);
+    
+    router.post("/manual-payment", protect, adminOnly, upload.single("proof"), recordManualPayment);
 
     router.get("/my-transactions", protect, getMyTransactions);
 

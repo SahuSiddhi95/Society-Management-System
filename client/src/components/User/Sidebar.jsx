@@ -10,6 +10,7 @@ export default function Sidebar({
   events = [],
   dues = [],
   transactions = [],
+  society = null,
   isOpen = false,
   onClose = () => { },
 }) {
@@ -120,16 +121,16 @@ export default function Sidebar({
             S
           </div>
           {(!collapsed || isOpen) && (
-            <span className="text-white font-extrabold text-xl tracking-tight lg:inline hidden md:hidden lg:block drop-shadow-sm">
-              SocietyOS
+            <span className="text-white font-extrabold text-xl tracking-tight lg:inline hidden md:hidden lg:block drop-shadow-sm truncate max-w-[120px]">
+              {society?.societyName || "SocietyOS"}
             </span>
           )}
-          <span className="text-white font-extrabold text-xl tracking-tight md:hidden drop-shadow-sm">
-            SocietyOS
+          <span className="text-white font-extrabold text-xl tracking-tight md:hidden drop-shadow-sm truncate max-w-[120px]">
+            {society?.societyName || "SocietyOS"}
           </span>
           {!collapsed && (
-            <span className="text-white font-extrabold text-xl tracking-tight hidden md:inline lg:hidden drop-shadow-sm">
-              SocietyOS
+            <span className="text-white font-extrabold text-xl tracking-tight hidden md:inline lg:hidden drop-shadow-sm truncate max-w-[120px]">
+              {society?.societyName || "SocietyOS"}
             </span>
           )}
 

@@ -8,12 +8,12 @@ import MyComplaints from "../../components/User/MyComplaints";
 import PaymentHistoryCard from "../../components/User/PaymentHistoryCard";
 
 export default function UserDashboardHome() {
-  const { user, complaints, recentNotices, transactions, dues } = useOutletContext();
+  const { user, complaints, recentNotices, transactions, dues, society } = useOutletContext();
 
   return (
     <>
       {/* Welcome Banner */}
-      <WelcomeBanner user={user} complaints={complaints} />
+      <WelcomeBanner user={user} complaints={complaints} society={society} />
 
       {/* Stats — passes real dues + transaction data */}
       <StatCards

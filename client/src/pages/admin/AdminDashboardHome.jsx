@@ -6,11 +6,11 @@ import MaintenanceDue from "../../components/Admin/MaintenanceDue";
 import ComplaintStatusCard from "../../components/Admin/ComplaintStatusCard";
 
 export default function AdminDashboardHome() {
-  const { users, stats } = useOutletContext();
+  const { users, stats, society } = useOutletContext();
 
   return (
     <div className="space-y-6">
-      <HeroBanner users={users} stats={stats} />
+      <HeroBanner users={users} stats={stats} society={society} />
 
       <StatCards
         stats={stats}

@@ -23,6 +23,7 @@ import NotificationPage from "./pages/admin/Notificationpage";
 import PaymentHistoryAdmin from "./pages/admin/PaymentHistory";
 import SettingsLayout from "./pages/admin/SettingsLayout";
 import SocietySettings from "./pages/admin/SocietySettings";
+import SecuritySettings from "./pages/admin/SecuritySettings";
 
 // User Dashboard & Pages
 import UserDashboard from "./pages/User/UserDashboard";
@@ -70,7 +71,7 @@ function App() {
             <Route index element={<SocietySettings />} />
             <Route path="society" element={<SocietySettings />} />
             <Route path="profile" element={<div className="p-8 text-gray-500">Profile Settings (Coming Soon)</div>} />
-            <Route path="security" element={<div className="p-8 text-gray-500">Security Settings (Coming Soon)</div>} />
+            <Route path="security" element={<SecuritySettings />} />
           </Route>
         </Route>
 

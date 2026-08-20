@@ -5,6 +5,7 @@ const {
   createAdmin,
   getAllUsers,
   deleteUser,
+  updateAdminCredentials,
 } = require("../controllers/adminController");
 const { protect } = require("../middleware/authMiddleware");
 const { adminOnly } = require("../middleware/roleMiddleware");
@@ -15,5 +16,6 @@ router.post("/create-user", protect, adminOnly, createUser);
 router.post("/create-admin", createAdmin)
 router.get("/users", protect, adminOnly, getAllUsers);
 router.delete("/users/:id", protect, adminOnly, deleteUser);
+router.put("/update-credentials", protect, adminOnly, updateAdminCredentials);
 
 module.exports = router;

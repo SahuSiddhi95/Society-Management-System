@@ -38,6 +38,7 @@ const transactionSchema = new mongoose.Schema({
   },
 
   description: String,
+  paymentProof: String,
 
 }, { timestamps: true });
 

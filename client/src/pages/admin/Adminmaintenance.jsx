@@ -10,12 +10,14 @@ import MaintenanceStats from "../../components/Admin/Maintenancestats";
 import GenerateMaintenanceForm from "../../components/Admin/Generatemaintenanceform";
 import MaintenanceTable from "../../components/Admin/Maintenancetable";
 import EditMaintenanceModal from "../../components/Admin/Editmaintenancemodal";
+import RecordPaymentModal from "../../components/Admin/Recordpaymentmodal";
 
 const AdminMaintenance = () => {
   const [maintenance, setMaintenance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [reminding, setReminding] = useState(false);
   const [editingRecord, setEditingRecord] = useState(null);
+  const [recordingPayment, setRecordingPayment] = useState(null);
   
   const { users } = useOutletContext(); // Get residents from the dashboard context
 
@@ -122,6 +124,7 @@ const AdminMaintenance = () => {
         maintenance={maintenance}
         loading={loading}
         onEdit={setEditingRecord}
+        onRecordPayment={setRecordingPayment}
         onRefresh={fetchMaintenance}
       />
 
@@ -129,6 +132,14 @@ const AdminMaintenance = () => {
         <EditMaintenanceModal
           record={editingRecord}
           onClose={() => setEditingRecord(null)}
+          onUpdated={fetchMaintenance}
+        />
+      )}
+
+      {recordingPayment && (
+        <RecordPaymentModal
+          record={recordingPayment}
+          onClose={() => setRecordingPayment(null)}
           onUpdated={fetchMaintenance}
         />
       )}

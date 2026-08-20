@@ -129,3 +129,47 @@ exports.deleteUser = async (req, res) => {
   await User.findByIdAndDelete(req.params.id);
   res.json({ message: "User deleted" });
 };
+
+exports.updateAdminCredentials = async (req, res) => {
+  try {
+    const { currentPassword, newEmail, newPassword } = req.body;
+
+    // Find admin user
+    const admin = await User.findById(req.user._id);
+    if (!admin || admin.role !== "admin") {
+      return res.status(403).json({ success: false, message: "Unauthorized." });
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, admin.password);
+    if (!isMatch) {
+      return res.status(400).json({ success: false, message: "Incorrect current password." });
+    }
+
+    const updateData = {};
+
+    // Check if new email already exists
+    if (newEmail && newEmail !== admin.email) {
+      const emailExists = await User.findOne({ email: newEmail });
+      if (emailExists) {
+        return res.status(400).json({ success: false, message: "Email is already in use by another account." });
+      }
+      updateData.email = newEmail;
+    }
+
+    // Update password if provided
+    if (newPassword) {
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      updateData.password = hashedPassword;
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      await User.updateOne({ _id: admin._id }, { $set: updateData });
+    }
+
+    res.status(200).json({ success: true, message: "Admin credentials updated successfully. Please login again." });
+  } catch (error) {
+    console.error("Update admin credentials error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

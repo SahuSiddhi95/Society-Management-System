@@ -1,4 +1,4 @@
-export default function HeroBanner({ stats }) {
+export default function HeroBanner({ stats, society }) {
   return (
     <div className="relative rounded-3xl bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-800 p-8 text-white overflow-hidden shadow-lg shadow-indigo-200">
       {/* Decorative Background Elements */}
@@ -18,7 +18,7 @@ export default function HeroBanner({ stats }) {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
             </span>
-            Shree Ram Residency · Admin Portal
+            {society?.societyName || "SocietyOS"} · Admin Portal
           </div>
         </div>
         <div className="hidden md:flex gap-10 text-right bg-white/10 p-5 rounded-2xl backdrop-blur-sm border border-white/10">

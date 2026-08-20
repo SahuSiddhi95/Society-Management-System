@@ -12,6 +12,7 @@ import { getMyComplaints } from "../../api/complaintApi";
 import { getUserDetails } from "../../api/userApi";
 import { getAllNotices } from "../../api/noticeApi";
 import { getAllEvents } from "../../api/Admin/Eventapi";
+import { getSocietyConfig } from "../../api/Admin/societyApi";
 
 export default function SocietyDashboard() {
   // Data states
@@ -19,6 +20,7 @@ export default function SocietyDashboard() {
   const [recentNotices, setRecentNotices] = useState([]);
   const [user, setUser] = useState(null);
   const [events, setEvents] = useState([]);
+  const [society, setSociety] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [dues, setDues] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,18 +48,20 @@ export default function SocietyDashboard() {
     setLoading(true);
     setDashError(null);
     try {
-      const [complaintData, userData, eventData, transactionRes, duesRes] =
+      const [complaintData, userData, eventData, transactionRes, duesRes, societyData] =
         await Promise.all([
           getMyComplaints().catch((err) => { console.error("Complaints load failed:", err); return []; }),
           getUserDetails().catch((err) => { console.error("User details load failed:", err); return null; }),
           getAllEvents().catch((err) => { console.error("Events load failed:", err); return []; }),
           API.get("/transactions/my-transactions").catch((err) => { console.error("Transactions load failed:", err); return { data: [] }; }),
           API.get("/maintenance/my-dues").catch((err) => { console.error("Dues load failed:", err); return { data: [] }; }),
+          getSocietyConfig().catch((err) => { console.error("Society config load failed:", err); return null; }),
         ]);
 
       setComplaints(Array.isArray(complaintData) ? complaintData : []);
       setUser(userData || null);
       setEvents(Array.isArray(eventData) ? eventData : []);
+      setSociety(societyData || null);
 
       // Normalize transaction data — handle { data: [...] } or raw array
       const txList = transactionRes?.data?.data || transactionRes?.data || [];
@@ -122,6 +126,7 @@ export default function SocietyDashboard() {
     events,
     dues,
     transactions,
+    society,
   };
 
   // ── Dashboard UI ─────────────────────────────────────────────────────────
@@ -135,6 +140,7 @@ export default function SocietyDashboard() {
         events={events}
         dues={dues}
         transactions={transactions}
+        society={society}
         isOpen={isMobileSidebarOpen}
         onClose={() => setIsMobileSidebarOpen(false)}
       />
@@ -142,7 +148,7 @@ export default function SocietyDashboard() {
       {/* Main */}
       <div className="md:ml-60 flex-1 flex flex-col min-h-screen transition-all duration-300 w-full overflow-x-hidden">
         {/* Topbar */}
-        <Topbar user={user} onMenuClick={() => setIsMobileSidebarOpen(true)} />
+        <Topbar user={user} society={society} onMenuClick={() => setIsMobileSidebarOpen(true)} />
 
         {/* Content */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 flex flex-col gap-5 lg:gap-6 overflow-x-hidden w-full">

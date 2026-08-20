@@ -3,7 +3,7 @@ import NotificationBell from "./NotificationBell";
 /**
  * Topbar component for the User dashboard.
  */
-export default function Topbar({ user, setActiveNav, onMenuClick }) {
+export default function Topbar({ user, society, setActiveNav, onMenuClick }) {
   const today = new Date().toLocaleDateString("en-IN", {
     weekday: "long",
     day: "numeric",
@@ -39,7 +39,7 @@ export default function Topbar({ user, setActiveNav, onMenuClick }) {
             {greeting}, <span className="text-indigo-600">{user?.name || "Resident"}</span> 👋
           </h1>
           <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 mt-0.5 truncate hidden sm:block">
-            {today} <span className="mx-1.5 opacity-50">•</span> {user?.societyName || "Shree Ram Residency"}
+            {today} <span className="mx-1.5 opacity-50">•</span> {society?.societyName || user?.societyName || "Shree Ram Residency"}
           </p>
         </div>
       </div>
