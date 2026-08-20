@@ -77,22 +77,12 @@ function Navbar() {
         </div>
 
         {/* CTA */}
-        {/* CTA */}
-        <div className="hidden md:flex items-center gap-3">
-          {/* Sign In */}
+        <div className="hidden md:flex items-center gap-4">
           <button
             onClick={() => navigate("/admin-login")}
-            className="text-sm text-gray-600 hover:text-gray-900 font-medium px-3 py-2"
+            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-6 py-2.5 rounded-xl shadow-lg shadow-blue-200 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
           >
-            Sign in
-          </button>
-
-          {/* User Login */}
-          <button
-            onClick={() => navigate("/user-login")}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
-          >
-            Get started free
+            Sign In
           </button>
         </div>
 
@@ -118,8 +108,12 @@ function Navbar() {
               {l}
             </a>
           ))}
-          <button className="bg-blue-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg w-full">
-            Get started free
+          <div className="w-full h-px bg-gray-100 my-2" />
+          <button 
+            onClick={() => { navigate("/admin-login"); setOpen(false); }}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-base font-bold px-4 py-3.5 rounded-xl w-full shadow-md shadow-blue-100 active:scale-95 transition-transform"
+          >
+            Sign In
           </button>
         </div>
       )}
@@ -148,17 +142,17 @@ function Hero() {
           platform built for Indian residential societies.
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
           <button
-            onClick={() => navigate("/user-login")}
-            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold px-7 py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-md shadow-blue-100"
+            onClick={() => navigate("/admin-login")}
+            className="group w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold px-8 py-4 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 shadow-xl shadow-blue-200 hover:shadow-2xl hover:-translate-y-1"
           >
-            Start free trial <Icon d={Icons.arrow} size={16} />
+            Sign In <Icon d={Icons.arrow} size={18} />
           </button>
-          <button className="w-full sm:w-auto bg-white text-gray-700 font-medium px-7 py-3.5 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
+          <button className="group w-full sm:w-auto bg-white text-gray-700 font-bold px-8 py-4 rounded-2xl border-2 border-gray-100 hover:border-gray-200 hover:bg-gray-50 transition-all duration-300 shadow-sm hover:shadow flex items-center justify-center gap-2"
             onClick={() => window.open(demoVideo, "_blank")}
           >
-            Watch demo
+            Watch demo <div className="group-hover:scale-110 transition-transform"><Icon d={Icons.star} size={18} /></div>
           </button>
         </div>
 
@@ -286,8 +280,8 @@ function HowItWorks() {
   const steps = [
     {
       num: "01",
-      title: "Register your society",
-      desc: "Enter society name, number of flats, and admin details. Done in under 2 minutes.",
+      title: "Contact our team",
+      desc: "Reach out to our support team to create your custom society profile in minutes.",
     },
     {
       num: "02",
@@ -364,7 +358,7 @@ function Pricing() {
         "Complaint log",
         "Email support",
       ],
-      cta: "Get started free",
+      cta: "Contact us",
       ctaStyle: "border border-gray-200 text-gray-700 hover:bg-gray-50",
     },
     {
@@ -379,7 +373,7 @@ function Pricing() {
         "SMS & WhatsApp alerts",
         "Priority support",
       ],
-      cta: "Start 14-day trial",
+      cta: "Contact us",
       ctaStyle: "bg-blue-600 text-white hover:bg-blue-700",
     },
     {
@@ -448,7 +442,8 @@ function Pricing() {
                 ))}
               </ul>
               <button
-                className={`w-full py-3 rounded-xl text-sm font-semibold transition-colors ${p.ctaStyle}`}
+                onClick={() => window.location.href = "#contact"}
+                className={`w-full py-4 rounded-2xl text-sm font-bold transition-all duration-300 ${p.ctaStyle}`}
               >
                 {p.cta}
               </button>

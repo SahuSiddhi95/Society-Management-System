@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { GoogleLogin } from "@react-oauth/google";
 
 const UserLogin = () => {
   const navigate = useNavigate();
@@ -50,6 +51,25 @@ const UserLogin = () => {
       setTimeout(() => navigate("/user-dashboard", { replace: true }), 1500);
     } catch (error) {
       toast.error(error.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setLoading(true);
+      const res = await API.post("/auth/google-login", { 
+        token: credentialResponse.credential,
+        role: "user"
+      });
+      
+      localStorage.setItem("token", res.data.token);
+      localStorage.setItem("role", res.data.role);
+      toast.success("Google Login successful");
+      setTimeout(() => navigate("/user-dashboard", { replace: true }), 1500);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Google Authentication failed");
     } finally {
       setLoading(false);
     }
@@ -143,7 +163,7 @@ const UserLogin = () => {
             <div className="grid grid-cols-2 gap-1 bg-gray-100 rounded-xl p-1 mb-5">
               <button
                 type="button"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/admin-login")}
                 className="py-2 text-xs font-medium rounded-lg text-gray-400 hover:text-gray-600 transition-colors"
               >
                 🔑 Admin
@@ -170,7 +190,7 @@ const UserLogin = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full bg-[#1c1c1e] border border-[#2a2a2e] rounded-xl px-3.5 py-2.5 text-xs text-white outline-none focus:border-[#2c39f2] transition-colors placeholder:text-gray-600"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs text-gray-900 outline-none focus:border-[#2c39f2] focus:ring-1 focus:ring-[#2c39f2] transition-colors placeholder:text-gray-400"
                 />
               </div>
 
@@ -186,7 +206,7 @@ const UserLogin = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full bg-[#1c1c1e] border border-[#2a2a2e] rounded-xl px-3.5 py-2.5 pr-10 text-xs text-white outline-none focus:border-[#2c39f2] transition-colors placeholder:text-gray-600"
+                    className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 pr-10 text-xs text-gray-900 outline-none focus:border-[#2c39f2] focus:ring-1 focus:ring-[#2c39f2] transition-colors placeholder:text-gray-400"
                   />
                   <button
                     type="button"
@@ -226,13 +246,15 @@ const UserLogin = () => {
               </div>
 
               {/* Google */}
-              <button
-                type="button"
-                className="w-full py-2.5 border border-gray-200 hover:bg-gray-50 rounded-xl text-xs font-medium text-gray-700 flex items-center justify-center gap-2 transition-colors"
-              >
-                <FaGoogle size={12} color="#EA4335" />
-                Sign in with Google
-              </button>
+              <div className="w-full flex justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={() => toast.error("Google Login Failed")}
+                  width="100%"
+                  theme="outline"
+                  size="large"
+                />
+              </div>
             </form>
 
             {/* Footer */}

@@ -25,8 +25,8 @@ export default function NotificationItem({ notification, onClick }) {
   const isRead = !!(notification.isRead || notification.read);
 
   const userObj = typeof notification.user === "object" ? notification.user : null;
-  const residentName = userObj?.name || notification.senderName || notification.sender;
-  const flatNo = userObj?.flatNo || userObj?.flatNumber || notification.flatNo || notification.flatNumber;
+  const residentName = notification.senderName || notification.sender || userObj?.name;
+  const flatNo = notification.flatNo || notification.flatNumber || userObj?.flatNo || userObj?.flatNumber;
 
   let residentLabel = "";
   if (residentName && flatNo) {

@@ -157,7 +157,7 @@ const AdminLogin = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full bg-[#1c1c1e] border border-[#2a2a2e] rounded-xl px-3.5 py-2.5 text-xs text-white outline-none focus:border-[#2c39f2] transition-colors placeholder:text-gray-600"
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs text-gray-900 outline-none focus:border-[#2c39f2] focus:ring-1 focus:ring-[#2c39f2] transition-colors placeholder:text-gray-400"
               />
             </div>
 
@@ -174,7 +174,7 @@ const AdminLogin = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="w-full bg-[#1c1c1e] border border-[#2a2a2e] rounded-xl px-3.5 py-2.5 pr-10 text-xs text-white outline-none focus:border-[#2c39f2] transition-colors placeholder:text-gray-600"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 pr-10 text-xs text-gray-900 outline-none focus:border-[#2c39f2] focus:ring-1 focus:ring-[#2c39f2] transition-colors placeholder:text-gray-400"
                 />
                 <button
                   type="button"

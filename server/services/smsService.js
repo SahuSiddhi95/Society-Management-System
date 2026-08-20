@@ -1,4 +1,9 @@
-const axios = require("axios");
+const twilio = require("twilio");
+
+let twilioClient = null;
+if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+  twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+}
 
 exports.sendMaintenanceSMS = async (user, maintenance) => {
   if (!user.phone) return { success: false, error: "No phone number provided" };
@@ -6,41 +11,44 @@ exports.sendMaintenanceSMS = async (user, maintenance) => {
   const message = `Hello ${user.name}, your maintenance of Rs.${maintenance.amount} for ${maintenance.month} ${maintenance.year} is due on ${new Date(maintenance.dueDate).toLocaleDateString("en-IN")}. Please pay on time.`;
 
   try {
-    if (!process.env.MSG91_AUTH_KEY) {
-      // Mock delivery if no key provided
+    if (!twilioClient) {
       console.log(`[Mock SMS] Sent to ${user.phone}: ${message}`);
       return { success: true, mocked: true };
     }
 
-    // Generic placeholder for MSG91 or similar SMS provider API call
-    // Note: Adjust the URL and payload format according to the exact provider documentation
-    await axios.post(
-      "https://control.msg91.com/api/v5/flow/",
-      {
-        template_id: process.env.MSG91_TEMPLATE_ID || "template_id",
-        short_url: "0",
-        recipients: [
-          {
-            mobiles: user.phone,
-            name: user.name,
-            amount: maintenance.amount,
-            month: maintenance.month,
-            year: maintenance.year,
-            due_date: new Date(maintenance.dueDate).toLocaleDateString("en-IN"),
-          },
-        ],
-      },
-      {
-        headers: {
-          authkey: process.env.MSG91_AUTH_KEY,
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    await twilioClient.messages.create({
+      body: message,
+      from: process.env.TWILIO_PHONE_NUMBER || "+1234567890",
+      to: user.phone.startsWith('+') ? user.phone : `+91${user.phone}` // Default to India prefix if none provided
+    });
 
     return { success: true };
   } catch (error) {
     console.error(`Failed to send SMS to ${user.phone}:`, error.message);
+    return { success: false, error: error.message };
+  }
+};
+
+exports.sendMaintenanceReminderSMS = async (user, maintenance) => {
+  if (!user.phone) return { success: false, error: "No phone number provided" };
+
+  const message = `Reminder: Hello ${user.name}, your maintenance of Rs.${maintenance.amount} for ${maintenance.month} ${maintenance.year} is still pending. Please clear your dues as soon as possible.`;
+
+  try {
+    if (!twilioClient) {
+      console.log(`[Mock SMS Reminder] Sent to ${user.phone}: ${message}`);
+      return { success: true, mocked: true };
+    }
+
+    await twilioClient.messages.create({
+      body: message,
+      from: process.env.TWILIO_PHONE_NUMBER || "+1234567890",
+      to: user.phone.startsWith('+') ? user.phone : `+91${user.phone}`
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error(`Failed to send SMS Reminder to ${user.phone}:`, error.message);
     return { success: false, error: error.message };
   }
 };

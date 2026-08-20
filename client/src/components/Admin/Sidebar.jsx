@@ -342,63 +342,65 @@ export default function Sidebar({ admin = {}, isMobileOpen, onCloseMobile }) {
           </button>
         </div>
 
-        {/* Logout confirmation modal */}
-        {confirmOpen && (
+
+      </aside>
+
+      {/* Logout confirmation modal */}
+      {confirmOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center px-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="logout-modal-title"
+        >
+          {/* Backdrop */}
           <div
-            className="fixed inset-0 z-[60] flex items-center justify-center px-4"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="logout-modal-title"
+            className={`absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-200 ${modalVisible ? "opacity-100" : "opacity-0"
+              }`}
+            onClick={() => setConfirmOpen(false)}
+          />
+
+          {/* Card */}
+          <div
+            className={`relative bg-white/95 backdrop-blur-xl rounded-2xl ring-1 ring-black/5 shadow-2xl w-full max-w-sm p-6 transition-all duration-200 ${modalVisible
+              ? "opacity-100 scale-100 translate-y-0"
+              : "opacity-0 scale-95 translate-y-2"
+              }`}
           >
-            {/* Backdrop */}
-            <div
-              className={`absolute inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity duration-200 ${modalVisible ? "opacity-100" : "opacity-0"
-                }`}
-              onClick={() => setConfirmOpen(false)}
-            />
+            <div className="w-11 h-11 rounded-full bg-red-50 flex items-center justify-center mb-4">
+              <Icon d={icons.logout} size={20} color="currentColor" className="text-red-500" />
+            </div>
 
-            {/* Card */}
-            <div
-              className={`relative bg-white/95 backdrop-blur-xl rounded-2xl ring-1 ring-black/5 shadow-2xl w-full max-w-sm p-6 transition-all duration-200 ${modalVisible
-                ? "opacity-100 scale-100 translate-y-0"
-                : "opacity-0 scale-95 translate-y-2"
-                }`}
+            <h2
+              id="logout-modal-title"
+              className="text-base font-semibold text-gray-900"
             >
-              <div className="w-11 h-11 rounded-full bg-red-50 flex items-center justify-center mb-4">
-                <Icon d={icons.logout} size={20} color="currentColor" className="text-red-500" />
-              </div>
+              Logout of your account?
+            </h2>
+            <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
+              You will need to sign in again to access your dashboard.
+            </p>
 
-              <h2
-                id="logout-modal-title"
-                className="text-base font-semibold text-gray-900"
+            <div className="flex items-center gap-3 mt-6">
+              <button
+                onClick={() => setConfirmOpen(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
               >
-                Logout of your account?
-              </h2>
-              <p className="text-sm text-gray-500 mt-1.5 leading-relaxed">
-                You will need to sign in again to access your dashboard.
-              </p>
-
-              <div className="flex items-center gap-3 mt-6">
-                <button
-                  onClick={() => setConfirmOpen(false)}
-                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => {
-                    setConfirmOpen(false);
-                    handleLogout();
-                  }}
-                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-colors"
-                >
-                  Logout
-                </button>
-              </div>
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setConfirmOpen(false);
+                  handleLogout();
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500 hover:bg-red-600 transition-colors"
+              >
+                Logout
+              </button>
             </div>
           </div>
-        )}
-      </aside>
+        </div>
+      )}
     </>
   );
 }

@@ -115,9 +115,9 @@ export default function PaymentHistory() {
   // ── render ───────────────────────────────────────────────
   return (
     <>
-        <main className="p-8 flex flex-col gap-6">
+        <div className="flex flex-col gap-4 sm:gap-6 pb-10">
           {/* ── Summary cards ── */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-green-50 border border-green-200 rounded-2xl p-5">
               <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">
                 Total Paid
@@ -160,6 +160,9 @@ export default function PaymentHistory() {
                 All Transactions
               </h3>
             </div>
+            
+            <div className="overflow-x-auto">
+              <div className="min-w-[800px]">
 
             {/* Header row */}
             <div className="grid grid-cols-7 px-6 py-2 bg-slate-50 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
@@ -268,8 +271,11 @@ export default function PaymentHistory() {
                 })}
               </div>
             )}
+            
+              </div>
+            </div>
           </div>
-        </main>
+        </div>
     </>
   );
 }

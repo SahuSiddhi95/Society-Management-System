@@ -4,6 +4,64 @@ const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken");
 const sendEmail = require("../config/sendEmail");
 const otpEmailTemplate = require("../templates/otpEmailTemplate");
+const { OAuth2Client } = require("google-auth-library");
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// Google Sign In
+exports.googleLogin = async (req, res) => {
+  try {
+    const { token, role } = req.body;
+
+    // Verify Google ID token
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email } = payload;
+
+    // Find the user by email
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Account not found. Please contact your society admin to register your email.",
+      });
+    }
+
+    // Role check
+    if (role === "admin" && user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied. Admin only.",
+      });
+    }
+
+    if (role === "user" && user.role === "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Please use Admin Login",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Google Login successful",
+      _id: user._id,
+      role: user.role,
+      token: generateToken(user._id),
+    });
+  } catch (error) {
+    console.error("Google Auth Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Google Authentication failed",
+    });
+  }
+};
+
 // Admin Login API
 // Admin Login
 exports.adminLogin = async (req, res) => {

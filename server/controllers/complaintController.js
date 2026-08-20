@@ -145,6 +145,15 @@ exports.updateComplaint = async (req, res) => {
     }
 
     await complaint.save();
+
+    await Notification.create({
+      title: "✅ Complaint Updated",
+      message: `Your complaint "${complaint.title}" has been updated by the admin. Status: ${complaint.status}.`,
+      type: "complaint",
+      user: complaint.user,
+      read: false,
+    });
+
     res.json(complaint);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -182,6 +191,15 @@ exports.updateComplaintStatus = async (req, res) => {
 
     complaint.status = status;
     await complaint.save();
+
+    await Notification.create({
+      title: "✅ Complaint Status Updated",
+      message: `Your complaint "${complaint.title}" is now marked as ${status}.`,
+      type: "complaint",
+      user: complaint.user,
+      read: false,
+    });
+
     res.json(complaint);
   } catch (err) {
     res.status(500).json({ message: err.message });

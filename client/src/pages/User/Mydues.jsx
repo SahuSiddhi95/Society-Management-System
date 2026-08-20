@@ -110,7 +110,7 @@ export default function MyDues() {
 
   return (
     <>
-        <main className="p-8 flex flex-col gap-6">
+        <div className="flex flex-col gap-4 sm:gap-6 pb-10">
           {/* ── Pay error toast ── */}
           {payError && (
             <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-3 flex items-center justify-between">
@@ -125,7 +125,7 @@ export default function MyDues() {
           )}
 
           {/* ── Summary cards ── */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
               <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">
                 Pending Dues
@@ -166,7 +166,7 @@ export default function MyDues() {
           {/* ── Unpaid banner (first unpaid/overdue due) ── */}
           {!loading && !error && unpaid.length > 0 && (
             <div
-              className={`bg-white border rounded-2xl p-6 flex items-center justify-between gap-6 shadow-sm ${unpaid[0].status === "Overdue" ? "border-red-300" : "border-amber-300"
+              className={`bg-white border rounded-2xl p-4 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 shadow-sm ${unpaid[0].status === "Overdue" ? "border-red-300" : "border-amber-300"
                 }`}
             >
               <div className="flex-1">
@@ -202,7 +202,7 @@ export default function MyDues() {
                 </p>
               </div>
 
-              <div className="text-right shrink-0">
+              <div className="text-left md:text-right shrink-0">
                 <p className="text-3xl font-bold text-slate-800 mb-3">
                   ₹{(unpaid[0].amount || 0).toLocaleString("en-IN")}
                 </p>
@@ -222,6 +222,9 @@ export default function MyDues() {
             <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-4">
               Monthly Due History
             </h3>
+            
+            <div className="overflow-x-auto">
+              <div className="min-w-[600px]">
 
             {loading ? (
               <div className="flex flex-col">
@@ -317,8 +320,11 @@ export default function MyDues() {
                 })}
               </div>
             )}
+            
+              </div>
+            </div>
           </div>
-        </main>
+        </div>
     </>
   );
 }

@@ -1,42 +1,36 @@
-// pages/User/Complaints.jsx
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useOutletContext } from "react-router-dom";
-
-import Icon from "../../assets/icons";
-
 import { createComplaint, getMyComplaints } from "../../api/complaintApi";
+import { Droplet, Zap, ArrowUpSquare, Wrench, MoreHorizontal, Plus, X, MessageSquareWarning, Clock, CheckCircle2, FileText, Image as ImageIcon } from "lucide-react";
+import toast from "react-hot-toast";
 
 const CATEGORIES = ["Water", "Electric", "Lift", "Plumber", "Other"];
 
+const CategoryIcon = {
+  Water: <Droplet className="w-5 h-5 text-blue-500" />,
+  Electric: <Zap className="w-5 h-5 text-amber-500" />,
+  Lift: <ArrowUpSquare className="w-5 h-5 text-indigo-500" />,
+  Plumber: <Wrench className="w-5 h-5 text-emerald-500" />,
+  Other: <MoreHorizontal className="w-5 h-5 text-slate-500" />
+};
+
 export default function Complaints() {
   const { fetchDashboardData } = useOutletContext();
-  // States
   const [complaints, setComplaints] = useState([]);
-
   const [loading, setLoading] = useState(true);
-
   const [showForm, setShowForm] = useState(false);
-
   const [submitting, setSubmitting] = useState(false);
-
-  const [successMsg, setSuccessMsg] = useState("");
-  // Form State
   const [form, setForm] = useState({
     title: "",
     category: "Water",
     description: "",
     image: null,
   });
-  // =========================
-  // FETCH COMPLAINTS
-  // =========================
+
   const fetchComplaints = async () => {
     try {
       setLoading(true);
-
       const data = await getMyComplaints();
-
       setComplaints(data || []);
     } catch (err) {
       console.log(err);
@@ -44,341 +38,229 @@ export default function Complaints() {
       setLoading(false);
     }
   };
-  // Load Complaints
+
   useEffect(() => {
     fetchComplaints();
   }, []);
 
-  // =========================
-  // SUBMIT COMPLAINT
-  // =========================
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Validation
     if (!form.title || !form.description) return;
-
     try {
       setSubmitting(true);
-
-      // FormData
       const formData = new FormData();
-
       formData.append("title", form.title);
-
       formData.append("category", form.category);
-
       formData.append("description", form.description);
+      if (form.image) formData.append("image", form.image);
 
-      // Image
-      if (form.image) {
-        formData.append("image", form.image);
-      }
-
-      // API
       await createComplaint(formData);
-
-      // Refresh Complaints
       await fetchComplaints();
-
-      // Refresh Dashboard
-      if (fetchDashboardData) {
-        await fetchDashboardData();
-      }
-
-      // Success
-      setSuccessMsg("Complaint raised successfully!");
-
-      // Reset Form
-      setForm({
-        title: "",
-        category: "Water",
-        description: "",
-        image: null,
-      });
-
-      // Close Form
+      if (fetchDashboardData) await fetchDashboardData();
+      
+      toast.success("Complaint raised successfully!");
+      setForm({ title: "", category: "Water", description: "", image: null });
       setShowForm(false);
-
-      // Remove Success
-      setTimeout(() => {
-        setSuccessMsg("");
-      }, 3000);
     } catch (err) {
-      console.log(err);
+      toast.error(err.response?.data?.message || "Failed to submit complaint");
     } finally {
       setSubmitting(false);
     }
   };
 
-  // =========================
-  // CATEGORY ICON
-  // =========================
-  const iconForCategory = (cat) => {
-    if (cat === "Water") return "water";
+  // Stats derived
+  const stats = useMemo(() => {
+    const total = complaints.length;
+    const resolved = complaints.filter(c => c.status === "resolved").length;
+    const pending = total - resolved;
+    return { total, resolved, pending };
+  }, [complaints]);
 
-    if (cat === "Electric") return "electric";
-
-    if (cat === "Lift") return "lift";
-
-    if (cat === "Plumber") return "plumber";
-
-    return "complaint";
-  };
-  const statusCounts = complaints.reduce((acc, complaint) => {
-    const status = complaint.status || "Pending";
-
-    acc[status] = (acc[status] || 0) + 1;
-
-    return acc;
-  }, {});
   return (
     <>
-        {/* Header */}
-        <header className="bg-white border-b border-slate-200 px-8 h-16 flex items-center justify-between sticky top-0 z-40 shadow-sm">
-          <div>
-            <h1 className="text-lg font-bold text-slate-800">My Complaints</h1>
-
-            <p className="text-xs text-slate-400 mt-0.5">
-              Track and raise complaints
-            </p>
+      <div className="flex flex-col gap-6 pb-10">
+        
+        {/* Header with Stats Overview */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center shrink-0">
+                <MessageSquareWarning className="w-6 h-6" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-slate-900 tracking-tight">Support Tickets</h1>
+                <p className="text-sm text-slate-500 mt-0.5">Track and raise complaints.</p>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => setShowForm(!showForm)}
+              className={`flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-xl transition-all active:scale-95 ${
+                showForm 
+                  ? "bg-slate-100 hover:bg-slate-200 text-slate-600" 
+                  : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm hover:shadow"
+              }`}
+            >
+              {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              {showForm ? "Cancel" : "New Ticket"}
+            </button>
           </div>
 
-          <button
-            onClick={() => setShowForm(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-all active:scale-95"
-          >
-            + Raise Complaint
-          </button>
-        </header>
-
-        {/* Content */}
-        <main className="p-8 flex flex-col gap-6">
-          {/* Success Message */}
-          {successMsg && (
-            <div className="bg-green-50 border border-green-200 text-green-700 text-sm font-medium px-5 py-3 rounded-xl">
-              ✅ {successMsg}
+          <div className="grid grid-cols-3 gap-4 pt-6 border-t border-slate-100">
+            <div className="flex flex-col">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1">Total</span>
+              <span className="text-2xl font-black text-slate-800">{loading ? "—" : stats.total}</span>
             </div>
-          )}
+            <div className="flex flex-col">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1"><Clock className="w-3 h-3 text-amber-500" /> Pending</span>
+              <span className="text-2xl font-black text-amber-600">{loading ? "—" : stats.pending}</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-emerald-500" /> Resolved</span>
+              <span className="text-2xl font-black text-emerald-600">{loading ? "—" : stats.resolved}</span>
+            </div>
+          </div>
+        </div>
 
-          {/* Complaint Form */}
-          {showForm && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-sm font-bold text-slate-800">
-                  Raise New Complaint
-                </h3>
+        {/* Inline Form */}
+        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showForm ? "max-h-[1000px] opacity-100" : "max-h-0 opacity-0"}`}>
+          <div className="bg-white border border-indigo-100 shadow-lg shadow-indigo-100/20 rounded-2xl p-6 relative">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-t-2xl"></div>
+            
+            <h3 className="text-base font-bold text-slate-800 mb-5 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-indigo-500" /> Open a Support Ticket
+            </h3>
 
-                <button
-                  onClick={() => setShowForm(false)}
-                  className="text-slate-400 hover:text-slate-600 text-xl"
-                >
-                  ✕
-                </button>
+            <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="md:col-span-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">Issue Title <span className="text-rose-500">*</span></label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Briefly summarize the issue"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10 transition-all bg-slate-50/50 focus:bg-white"
+                />
               </div>
 
-              {/* FORM */}
-              <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-                {/* Title */}
-                <div className="col-span-2">
-                  <label className="text-xs text-slate-500 font-medium mb-1 block">
-                    Title
-                  </label>
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">Category <span className="text-rose-500">*</span></label>
+                <select
+                  value={form.category}
+                  onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10 transition-all bg-slate-50/50 focus:bg-white appearance-none"
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </div>
 
-                  <input
-                    type="text"
-                    placeholder="e.g. Water leakage in bathroom"
-                    value={form.title}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        title: e.target.value,
-                      })
-                    }
-                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  />
-                </div>
-
-                {/* Category */}
-                <div>
-                  <label className="text-xs text-slate-500 font-medium mb-1 block">
-                    Category
-                  </label>
-
-                  <select
-                    value={form.category}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        category: e.target.value,
-                      })
-                    }
-                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white"
-                  >
-                    {CATEGORIES.map((c) => (
-                      <option key={c}>{c}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Image */}
-                <div>
-                  <label className="text-xs text-slate-500 font-medium mb-1 block">
-                    Attach Image
-                  </label>
-
+              <div>
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">Attach Photo (Optional)</label>
+                <div className="relative">
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        image: e.target.files[0],
-                      })
-                    }
-                    className="w-full border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-500"
+                    onChange={(e) => setForm({ ...form, image: e.target.files[0] })}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   />
+                  <div className="w-full border border-slate-200 border-dashed rounded-xl px-4 py-3 text-sm text-slate-500 bg-slate-50 flex items-center justify-center gap-2 hover:bg-slate-100 transition-colors">
+                    <ImageIcon className="w-4 h-4 text-slate-400" />
+                    <span className="truncate">{form.image ? form.image.name : "Click to upload image"}</span>
+                  </div>
                 </div>
+              </div>
 
-                {/* Description */}
-                <div className="col-span-2">
-                  <label className="text-xs text-slate-500 font-medium mb-1 block">
-                    Description
-                  </label>
+              <div className="md:col-span-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">Description <span className="text-rose-500">*</span></label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="Provide all relevant details here..."
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-400/10 transition-all bg-slate-50/50 focus:bg-white resize-none"
+                />
+              </div>
 
-                  <textarea
-                    rows={3}
-                    placeholder="Describe issue..."
-                    value={form.description}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        description: e.target.value,
-                      })
-                    }
-                    className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
-                  />
-                </div>
+              <div className="md:col-span-2 flex justify-end mt-2">
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-bold px-8 py-3 rounded-xl transition-all shadow-sm hover:shadow w-full sm:w-auto"
+                >
+                  {submitting ? "Submitting..." : "Submit Ticket"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
 
-                {/* Buttons */}
-                <div className="col-span-2 flex gap-3 mt-2">
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all"
-                  >
-                    {submitting ? "Submitting..." : "Submit Complaint"}
-                  </button>
+        {/* Complaints List */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-bold text-slate-800 px-2">Ticket History</h3>
+          
+          {loading ? (
+            <div className="text-center py-12">
+              <p className="text-sm font-medium text-slate-400 animate-pulse">Loading tickets...</p>
+            </div>
+          ) : complaints.length === 0 ? (
+            <div className="bg-white border border-slate-200/80 rounded-2xl p-12 flex flex-col items-center justify-center text-center shadow-sm">
+              <div className="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+              <h3 className="text-base font-bold text-slate-700">No issues found</h3>
+              <p className="text-sm text-slate-500 mt-1 max-w-sm">You haven't raised any complaints yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {complaints.map((c) => {
+                const isResolved = c.status === "resolved";
+                
+                return (
+                  <div key={c._id} className="bg-white border border-slate-200/80 rounded-2xl p-5 flex flex-col shadow-sm hover:shadow transition-shadow">
+                    
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shrink-0 border border-slate-100">
+                        {CategoryIcon[c.category] || CategoryIcon.Other}
+                      </div>
+                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shrink-0 border ${
+                        isResolved 
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-100" 
+                          : "bg-amber-50 text-amber-700 border-amber-100"
+                      }`}>
+                        {c.status || "Pending"}
+                      </span>
+                    </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setShowForm(false)}
-                    className="bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium px-5 py-2.5 rounded-xl transition-all"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+                    <div className="mb-4 flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{c.category}</span>
+                        <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                        <span className="text-[10px] font-bold text-slate-400">{new Date(c.createdAt).toLocaleDateString("en-IN", { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      </div>
+                      <h4 className="text-sm font-bold text-slate-800 line-clamp-2 leading-snug">{c.title}</h4>
+                      {c.description && (
+                        <p className="text-xs text-slate-500 mt-2 line-clamp-3 leading-relaxed">{c.description}</p>
+                      )}
+                    </div>
+                    
+                    {c.image && (
+                      <div className="mt-auto pt-3 border-t border-slate-100">
+                        <a href={c.image} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">
+                          <ImageIcon className="w-3.5 h-3.5" /> View Attachment
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           )}
-
-          {/* Complaint List */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                All Complaints ({complaints.length})
-              </h3>
-
-              <div className="flex gap-2 flex-wrap">
-                {Object.entries(statusCounts).map(([status, count]) => (
-                  <span
-                    key={status}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${status.toLowerCase() === "resolved"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-amber-100 text-amber-700"
-                      }`}
-                  >
-                    {status} ({count})
-                  </span>
-                ))}
-              </div>
-            </div>
-            {loading ? (
-              <p className="text-sm text-slate-400">Loading...</p>
-            ) : complaints.length === 0 ? (
-              <div className="text-center py-10">
-                <div className="text-4xl mb-3">📋</div>
-
-                <p className="text-sm text-slate-500 font-medium">
-                  No complaints raised yet
-                </p>
-              </div>
-            ) : (
-              <div className="flex flex-col">
-                {complaints.map((c, i) => (
-                  <div
-                    key={c._id}
-                    className={`flex items-start gap-4 py-4 ${i < complaints.length - 1
-                        ? "border-b border-slate-100"
-                        : ""
-                      }`}
-                  >
-                    {/* Icon */}
-                    <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-xl shrink-0">
-                      <Icon name={iconForCategory(c.category)} />
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <p className="text-sm font-semibold text-slate-800">
-                          {c.title}
-                        </p>
-
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 uppercase">
-                          {c.category}
-                        </span>
-                      </div>
-
-                      {c.description && (
-                        <p className="text-xs text-slate-500 mt-0.5">
-                          {c.description}
-                        </p>
-                      )}
-
-                      <p className="text-xs text-slate-400 mt-1">
-                        {c.createdAt
-                          ? new Date(c.createdAt).toLocaleDateString("en-IN")
-                          : "No Date"}
-                      </p>
-
-                      {/* Image */}
-                      {c.image && (
-                        <img
-                          src={c.image}
-                          alt="complaint"
-                          className="w-20 h-20 object-cover rounded-xl mt-2 border border-slate-100"
-                        />
-                      )}
-                    </div>
-
-                    {/* Status */}
-                    <span
-                      className={`text-xs font-semibold px-3 py-1 rounded-full shrink-0 ${c.status === "resolved"
-                          ? "bg-green-50 text-green-600"
-                          : c.status === "pending"
-                            ? "bg-amber-50 text-amber-600"
-                            : "bg-red-50 text-red-500"
-                        }`}
-                    >
-                      {c.status || "Open"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </main>
+        </div>
+      </div>
     </>
   );
 }

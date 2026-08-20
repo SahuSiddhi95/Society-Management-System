@@ -92,6 +92,17 @@ exports.updateNotice = async (req, res) => {
       });
     }
 
+    const users = await User.find({ role: "user" });
+    await Notification.insertMany(
+      users.map((user) => ({
+        title: "📢 Notice Updated",
+        message: `The notice "${notice.title}" has been updated.`,
+        type: "notice",
+        user: user._id,
+        read: false,
+      }))
+    );
+
     res.status(200).json({
       success: true,
       message: "Notice updated successfully",
@@ -116,6 +127,17 @@ exports.deleteNotice = async (req, res) => {
         message: "Notice not found",
       });
     }
+
+    const users = await User.find({ role: "user" });
+    await Notification.insertMany(
+      users.map((user) => ({
+        title: "📢 Notice Cancelled",
+        message: `The notice "${notice.title}" has been cancelled/removed.`,
+        type: "notice",
+        user: user._id,
+        read: false,
+      }))
+    );
 
     res.status(200).json({
       success: true,

@@ -8,7 +8,8 @@ const {
   updateMaintenance,
   deleteMaintenance,
   generateDues,
-  getPaymentHistory
+  getPaymentHistory,
+  sendReminders
 } = require("../controllers/maintenanceController");
 
 const { protect } = require("../middleware/authMiddleware");
@@ -26,4 +27,5 @@ router.put("/:id", protect, adminOnly, updateMaintenance);
 router.delete("/:id", protect, adminOnly, deleteMaintenance);
 router.get("/history", getPaymentHistory);
 router.post("/generate-dues", protect, adminOnly, generateDues);
+router.post("/send-reminders", protect, adminOnly, sendReminders);
 module.exports = router;

@@ -38,4 +38,4 @@ export const getUserDetails =
         error.message
       );
     }
-  };
+  };

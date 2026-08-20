@@ -1,5 +1,6 @@
 const Maintenance = require("../models/Maintenance");
 const User = require("../models/User");
+const ReminderLog = require("../models/ReminderLog");
 const emailService = require("../services/emailService");
 const smsService = require("../services/smsService");
 const notificationService = require("../services/notificationService");
@@ -104,8 +105,12 @@ exports.deleteMaintenance = async (req, res) => {
 
 exports.generateDues = async (req, res) => {
   try {
-    const { amount, month, year, dueDate, category, description } = req.body;
-    const residents = await User.find({ role: "user" });
+    const { amount, month, year, dueDate, category, description, residentId } = req.body;
+    let query = { role: "user" };
+    if (residentId && residentId !== "All") {
+      query = { _id: residentId, role: "user" };
+    }
+    const residents = await User.find(query);
 
     const dues = [];
     let emailsSent = 0;
@@ -157,5 +162,72 @@ exports.generateDues = async (req, res) => {
 
   } catch (err) {
     res.status(500).json(err);
+  }
+};
+
+exports.sendRemindersLogic = async (adminUserId = null) => {
+  const dues = await Maintenance.find({ status: { $in: ["Pending", "Overdue"] } }).populate("resident");
+  const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  
+  let emailsSent = 0;
+  let smsSent = 0;
+  let inAppSent = 0;
+  let remindersProcessed = 0;
+
+  for (const due of dues) {
+    if (!due.resident) continue;
+
+    // Check duplicate using ReminderLog for today
+    const existingLog = await ReminderLog.findOne({
+      maintenance: due._id,
+      resident: due.resident._id,
+      date: today
+    });
+
+    if (existingLog) {
+      continue; // Skip, reminder already sent today
+    }
+
+    const channelsSent = [];
+
+    // Send notifications
+    const [emailRes, smsRes, inAppRes] = await Promise.all([
+      emailService.sendMaintenanceReminderEmail(due.resident, due).catch(() => ({ success: false })),
+      smsService.sendMaintenanceReminderSMS(due.resident, due).catch(() => ({ success: false })),
+      notificationService.sendInAppReminderNotification(due.resident, due).catch(() => ({ success: false }))
+    ]);
+
+    if (emailRes.success) { emailsSent++; channelsSent.push("email"); }
+    if (smsRes.success) { smsSent++; channelsSent.push("sms"); }
+    if (inAppRes.success) { inAppSent++; channelsSent.push("in-app"); }
+
+    // Log the reminder
+    await ReminderLog.create({
+      maintenance: due._id,
+      resident: due.resident._id,
+      date: today,
+      channelsSent
+    });
+
+    remindersProcessed++;
+  }
+
+  return {
+    success: true,
+    message: "Reminders processed successfully",
+    totalProcessed: remindersProcessed,
+    emailsSent,
+    smsSent,
+    inAppSent
+  };
+};
+
+exports.sendReminders = async (req, res) => {
+  try {
+    const result = await exports.sendRemindersLogic(req.user._id);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error("Error in sendReminders API:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };

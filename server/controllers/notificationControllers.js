@@ -7,9 +7,6 @@ const Notification = require("../models/Notification");
 exports.getNotifications = async (req, res) => {
   try {
     let query = { user: req.user._id };
-    if (req.user.role === "admin") {
-      query = {}; // Admin gets all notifications
-    }
 
     const notifications = await Notification.find(query)
       .populate("user", "name flatNo flatNumber email phone")
@@ -32,9 +29,6 @@ exports.getNotifications = async (req, res) => {
 exports.getUnreadNotifications = async (req, res) => {
   try {
     let query = { user: req.user._id, read: false };
-    if (req.user.role === "admin") {
-      query = { read: false };
-    }
 
     const notifications = await Notification.find(query)
       .populate("user", "name flatNo flatNumber email phone")
@@ -58,9 +52,6 @@ exports.getUnreadNotifications = async (req, res) => {
 exports.getUnreadCount = async (req, res) => {
   try {
     let query = { user: req.user._id, read: false };
-    if (req.user.role === "admin") {
-      query = { read: false };
-    }
 
     const count = await Notification.countDocuments(query);
 
@@ -76,7 +67,7 @@ exports.getUnreadCount = async (req, res) => {
 // ================================
 exports.markAsRead = async (req, res) => {
   try {
-    const query = req.user.role === "admin" ? { _id: req.params.id } : { _id: req.params.id, user: req.user._id };
+    const query = { _id: req.params.id, user: req.user._id };
     const notification = await Notification.findOneAndUpdate(
       query,
       { read: true },
@@ -101,7 +92,7 @@ exports.markAsRead = async (req, res) => {
 // ================================
 exports.markAllAsRead = async (req, res) => {
   try {
-    const query = req.user.role === "admin" ? { read: false } : { user: req.user._id, read: false };
+    const query = { user: req.user._id, read: false };
     await Notification.updateMany(query, { read: true });
 
     res.status(200).json({
@@ -119,7 +110,7 @@ exports.markAllAsRead = async (req, res) => {
 // ================================
 exports.deleteNotification = async (req, res) => {
   try {
-    const query = req.user.role === "admin" ? { _id: req.params.id } : { _id: req.params.id, user: req.user._id };
+    const query = { _id: req.params.id, user: req.user._id };
     const notification = await Notification.findOneAndDelete(query);
 
     if (!notification) {
@@ -142,7 +133,7 @@ exports.deleteNotification = async (req, res) => {
 // ================================
 exports.deleteAllNotifications = async (req, res) => {
   try {
-    const query = req.user.role === "admin" ? {} : { user: req.user._id };
+    const query = { user: req.user._id };
     await Notification.deleteMany(query);
 
     res.status(200).json({

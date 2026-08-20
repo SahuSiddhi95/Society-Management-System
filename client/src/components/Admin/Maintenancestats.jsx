@@ -1,18 +1,19 @@
 import { Layers, CheckCircle2, Clock, IndianRupee } from "lucide-react";
 
 const StatCard = ({ title, value, icon: Icon, iconBg, iconColor, loading }) => (
-  <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow duration-200">
-    <div className="flex items-center justify-between">
+  <div className="group bg-white rounded-3xl shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-gray-100 p-6 hover:-translate-y-1.5 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] transition-all duration-300 relative overflow-hidden">
+    <div className={`absolute top-0 right-0 w-32 h-32 ${iconBg} rounded-full blur-3xl opacity-20 -mr-10 -mt-10 group-hover:scale-150 transition-transform duration-500`} />
+    <div className="flex items-center justify-between relative z-10">
       <div>
-        <p className="text-sm font-medium text-gray-500">{title}</p>
+        <p className="text-sm font-semibold text-gray-500 tracking-wide uppercase">{title}</p>
         {loading ? (
-          <div className="h-8 w-20 bg-gray-200 rounded-lg animate-pulse mt-2" />
+          <div className="h-8 w-20 bg-gray-100 rounded-lg animate-pulse mt-2" />
         ) : (
-          <h3 className="text-2xl font-bold text-gray-800 mt-1">{value}</h3>
+          <h3 className="text-3xl font-extrabold text-gray-900 mt-2 tracking-tight">{value}</h3>
         )}
       </div>
-      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${iconBg}`}>
-        <Icon className={`w-6 h-6 ${iconColor}`} />
+      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${iconBg} bg-opacity-50 ring-1 ring-white/60 shadow-sm group-hover:scale-110 transition-transform duration-300`}>
+        <Icon className={`w-7 h-7 ${iconColor}`} />
       </div>
     </div>
   </div>

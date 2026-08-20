@@ -70,6 +70,19 @@ exports.updateEvent = async (req, res) => {
       new: true,
     });
 
+    if (event) {
+      const users = await User.find({ role: "user" });
+      await Notification.insertMany(
+        users.map((user) => ({
+          title: "📅 Event Updated",
+          message: `The details for "${event.title}" have been updated.`,
+          type: "event",
+          user: user._id,
+          read: false,
+        }))
+      );
+    }
+
     res.status(200).json(event);
   } catch (error) {
     res.status(500).json({
@@ -81,7 +94,20 @@ exports.updateEvent = async (req, res) => {
 // Delete Event
 exports.deleteEvent = async (req, res) => {
   try {
-    await Event.findByIdAndDelete(req.params.id);
+    const event = await Event.findByIdAndDelete(req.params.id);
+
+    if (event) {
+      const users = await User.find({ role: "user" });
+      await Notification.insertMany(
+        users.map((user) => ({
+          title: "📅 Event Cancelled",
+          message: `The event "${event.title}" has been cancelled/removed.`,
+          type: "event",
+          user: user._id,
+          read: false,
+        }))
+      );
+    }
 
     res.status(200).json({
       message: "Event deleted successfully",
@@ -120,6 +146,19 @@ exports.updateEventStatus = async (req, res) => {
         new: true,
       },
     );
+
+    if (event) {
+      const users = await User.find({ role: "user" });
+      await Notification.insertMany(
+        users.map((user) => ({
+          title: "📅 Event Status Updated",
+          message: `The event "${event.title}" is now marked as ${event.status}.`,
+          type: "event",
+          user: user._id,
+          read: false,
+        }))
+      );
+    }
 
     res.status(200).json(event);
   } catch (error) {

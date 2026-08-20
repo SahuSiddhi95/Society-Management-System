@@ -10,15 +10,17 @@ const {
   adminLogin,
   userLogin,
   logout,
-  getAdminContact
+  getAdminContact,
+  googleLogin
 } = require("../controllers/authControllers");
 const { protect } = require("../middleware/authMiddleware");
 const router = express.Router();
 
 router.post("/admin-login", adminLogin);
 router.post("/user-login", userLogin);
+router.post("/google-login", googleLogin);
 router.post("/forgot-password", forgotPassword);
-router.get("/details", protect , getUserDetails);
+router.get("/details", protect, getUserDetails);
 // VERIFY OTP
 router.post("/verify-otp", verifyOtp);
 // RESEND OTP

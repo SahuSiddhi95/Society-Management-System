@@ -46,7 +46,7 @@ function App() {
         <Route path="/" element={<SocietyLanding />} />
         <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/user-login" element={<UserLogin />} />
-        
+
         {/* ADMIN ROUTES */}
         <Route
           path="/admin-dashboard"
@@ -75,8 +75,8 @@ function App() {
         </Route>
 
         {/* USER ROUTES */}
-        <Route 
-          path="/user-dashboard" 
+        <Route
+          path="/user-dashboard"
           element={
             <NotificationProvider>
               <UserRoute>

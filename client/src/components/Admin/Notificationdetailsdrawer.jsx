@@ -40,8 +40,8 @@ export default function NotificationDetailsDrawer({
     setTimeout(onClose, 200);
   };
 
-  const residentName = notification.user?.name || notification.sender || "—";
-  const flatNumber = notification.user?.flatNo || notification.user?.flatNumber || "—";
+  const residentName = notification.senderName || notification.user?.name || "—";
+  const flatNumber = notification.flatNo || notification.user?.flatNo || notification.user?.flatNumber || "—";
   const isRead = !!(notification.isRead || notification.read);
 
   return (

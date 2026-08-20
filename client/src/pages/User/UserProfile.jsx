@@ -7,10 +7,12 @@ export default function UserProfile() {
   if (!user) return null;
 
   return (
-    <div className="space-y-8 animate-in fade-in zoom-in-95 duration-300">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">My Profile</h1>
-        <p className="text-sm text-gray-500 mt-1">View your registered details and family members.</p>
+    <div className="space-y-8 animate-in fade-in zoom-in-95 duration-300 pb-10">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">My Profile</h1>
+          <p className="text-sm text-gray-500 mt-1">View your registered details and family members.</p>
+        </div>
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -24,7 +26,7 @@ export default function UserProfile() {
           </div>
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Email Address</label>
-            <p className="text-sm font-semibold text-gray-800">{user.email}</p>
+            <p className="text-sm font-semibold text-gray-500">{user.email}</p>
           </div>
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Phone Number</label>
@@ -47,7 +49,7 @@ export default function UserProfile() {
 
       {user.familyMembers && user.familyMembers.length > 0 && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+          <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
             <h2 className="text-lg font-bold text-gray-900">Family Members ({user.familyMembersCount})</h2>
           </div>
           <div className="p-6">
