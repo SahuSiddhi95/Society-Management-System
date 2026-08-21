@@ -14,7 +14,6 @@ export default function AdminDashboard() {
     totalResidents: 0,
     totalFlats: 0,
     occupiedFlats: 0,
-    occupiedFlats: 0,
     vacantFlats: 0,
   });
   const [society, setSociety] = useState(null);

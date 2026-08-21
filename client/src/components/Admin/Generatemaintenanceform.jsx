@@ -53,10 +53,14 @@ const GenerateMaintenanceForm = ({ onGenerated, users = [] }) => {
         description: form.description,
       });
       const { total, emailsSent, smsSent, inAppSent } = response.data;
-      toast.success(
-        `Generated ${total} dues. Sent ${emailsSent} emails, ${smsSent} SMS, ${inAppSent} in-app alerts.`,
-        { duration: 5000 }
-      );
+      if (total === 0) {
+        toast.error("Maintenance already exists for the selected resident(s) in this month/category.");
+      } else {
+        toast.success(
+          `Generated ${total} dues. Sent ${emailsSent} emails, ${smsSent} SMS, ${inAppSent} in-app alerts.`,
+          { duration: 5000 }
+        );
+      }
       setForm((prev) => ({ ...initialForm, month: prev.month, category: prev.category, residentId: prev.residentId }));
       onGenerated?.();
     } catch (err) {
@@ -94,7 +98,7 @@ const GenerateMaintenanceForm = ({ onGenerated, users = [] }) => {
               className={inputClasses}
             >
               <option value="All">Everyone (Mass Generate)</option>
-              {users.map((u) => (
+              {users.filter(u => u.role !== "admin").map((u) => (
                 <option key={u._id} value={u._id}>
                   {u.name} (Flat {u.flatNo || u.flatNumber || "N/A"})
                 </option>

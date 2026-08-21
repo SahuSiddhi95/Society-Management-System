@@ -3,8 +3,7 @@ import { FaGoogle } from "react-icons/fa";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import API from "../../api/axios";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import toast from "react-hot-toast";
 import { GoogleLogin } from "@react-oauth/google";
 
 const UserLogin = () => {
@@ -77,8 +76,6 @@ const UserLogin = () => {
 
   return (
     <>
-      <ToastContainer position="top-right" autoClose={2000} theme="light" />
-
       <div className="flex h-screen overflow-hidden font-sans">
 
         {/* ── LEFT PANEL ── */}

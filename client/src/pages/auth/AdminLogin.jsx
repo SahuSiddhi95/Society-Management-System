@@ -31,13 +31,7 @@ const AdminLogin = () => {
       toast.success("Admin login successful");
       navigate("/admin-dashboard", { replace: true });
     } catch (error) {
-      if (error.response?.data?.message === "Invalid email") {
-        toast.error("Email does not exist");
-      } else if (error.response?.data?.message === "Wrong password") {
-        toast.error("Incorrect password");
-      } else {
-        toast.error("Login failed");
-      }
+      toast.error(error.response?.data?.message || "Login failed");
     } finally {
       setLoading(false);
     }

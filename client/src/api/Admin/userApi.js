@@ -37,3 +37,28 @@ export const createUser = async (userData) => {
     );
   }
 };
+
+// Update User
+export const updateUser = async (id, userData) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const { data } = await API.put(
+      `/admin/users/${id}`,
+      userData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return data;
+  } catch (error) {
+    throw (
+      error.response?.data || {
+        message: "Failed to update user",
+      }
+    );
+  }
+};

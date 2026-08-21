@@ -6,17 +6,20 @@ const Maintenance = require("../models/Maintenance");
 exports.getDashboardStats = async (req, res) => {
   try {
     // Residents
-    const totalResidents = await User.countDocuments({
-      role: "user",
-    });
+    const residentAggregation = await User.aggregate([
+      { $match: { role: "user" } },
+      { $group: { _id: null, mainUsers: { $sum: 1 }, familyMembers: { $sum: "$familyMembersCount" } } }
+    ]);
+    const totalResidents = residentAggregation.length > 0 ? residentAggregation[0].mainUsers + (residentAggregation[0].familyMembers || 0) : 0;
 
     // Flats — count distinct flatNo values assigned to residents
     const flatNoList = await User.distinct("flatNo", { role: "user" });
     const occupiedFlats = flatNoList.length;
-    // Assuming society has a fixed number of 50 flats for demo purposes
-    const TOTAL_FLATS = 50;
+    const Society = require("../models/Society");
+    const societyDoc = await Society.findOne();
+    const TOTAL_FLATS = societyDoc && societyDoc.totalFlats ? societyDoc.totalFlats : 50;
     const totalFlats = TOTAL_FLATS;
-    const vacantFlats = TOTAL_FLATS - occupiedFlats;
+    const vacantFlats = TOTAL_FLATS > occupiedFlats ? TOTAL_FLATS - occupiedFlats : 0;
 
     // Maintenance Collections
     const paidMaintenance = await Maintenance.aggregate([

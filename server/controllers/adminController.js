@@ -130,6 +130,38 @@ exports.deleteUser = async (req, res) => {
   res.json({ message: "User deleted" });
 };
 
+exports.updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+    
+    // Check if flat is already assigned to someone else
+    if (updateData.flatNo) {
+      const flatExists = await User.findOne({ flatNo: updateData.flatNo, _id: { $ne: id } });
+      if (flatExists) {
+        return res.status(400).json({ message: "Flat number already assigned to another user" });
+      }
+    }
+
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    } else {
+      delete updateData.password; // Don't update password if it's empty
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true }).select("-password");
+    
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    res.json({ message: "User updated successfully", user: updatedUser });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 exports.updateAdminCredentials = async (req, res) => {
   try {
     const { currentPassword, newEmail, newPassword } = req.body;

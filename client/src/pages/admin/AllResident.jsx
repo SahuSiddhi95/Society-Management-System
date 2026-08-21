@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { createUser, getAllUsers } from "../../api/Admin/userApi";
+import { createUser, getAllUsers, updateUser } from "../../api/Admin/userApi";
 // ── mock API shim – replace with your real API calls ──────────────────────────
 // const mockResidents = [
 //   { id: 1, name: "Priya Sharma",    unit: "A-101", phone: "98765 43210", email: "priya@mail.com",   status: "active",  joinDate: "2023-01-15", avatar: "PS" },
@@ -45,6 +45,7 @@ export default function Residents() {
   const [viewResident, setView] = useState(null);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
+  const [editResidentId, setEditResidentId] = useState(null);
 
   useEffect(() => {
     fetchResidents();
@@ -53,7 +54,8 @@ export default function Residents() {
   const fetchResidents = async () => {
     try {
       const data = await getAllUsers();
-      setResidents(data);
+      // Keep admin details out of resident panel
+      setResidents(data.filter((u) => u.role !== "admin"));
     } catch (error) {
       console.log(error);
     }
@@ -79,7 +81,7 @@ export default function Residents() {
 
     if (!form.name.trim()) e.name = "Name is required";
     if (!form.email.trim()) e.email = "Email is required";
-    if (!form.password.trim()) e.password = "Password is required";
+    if (!editResidentId && !form.password.trim()) e.password = "Password is required";
     if (!form.flatNo.trim()) e.flatNo = "Flat No is required";
     if (!form.phone.trim()) e.phone = "Phone is required";
 
@@ -108,10 +110,9 @@ export default function Residents() {
     try {
       setSaving(true);
 
-      const response = await createUser({
+      const payload = {
         name: form.name,
         email: form.email,
-        password: form.password,
         phone: form.phone,
         flatNo: form.flatNo,
         floor: Number(form.floor),
@@ -119,17 +120,28 @@ export default function Residents() {
         familyMembersCount: Number(form.familyMembersCount),
         familyMembers: form.familyMembers.slice(0, form.familyMembersCount),
         role: "user",
-      });
+      };
 
-      showToast(response.message || "Resident added successfully");
+      if (form.password) {
+        payload.password = form.password;
+      }
+
+      if (editResidentId) {
+        await updateUser(editResidentId, payload);
+        showToast("Resident updated successfully");
+      } else {
+        await createUser(payload);
+        showToast("Resident added successfully");
+      }
 
       setForm(EMPTY_FORM);
       setErrors({});
       setShowModal(false);
+      setEditResidentId(null);
 
       // Refresh resident list
       const users = await getAllUsers();
-      setResidents(users);
+      setResidents(users.filter((u) => u.role !== "admin"));
     } catch (error) {
       showToast(
         error?.message ||
@@ -186,6 +198,7 @@ export default function Residents() {
           onClick={() => {
             setForm(EMPTY_FORM);
             setErrors({});
+            setEditResidentId(null);
             setShowModal(true);
           }}
           className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-sm"
@@ -341,25 +354,49 @@ export default function Residents() {
                       className="px-4 py-3.5 text-right"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <button
-                        onClick={() => setView(r)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition"
-                        title="View details"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          viewBox="0 0 24 24"
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => setView(r)}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition"
+                          title="View details"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        </svg>
-                      </button>
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zM2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setForm({
+                              name: r.name || "",
+                              email: r.email || "",
+                              password: "",
+                              phone: r.phone || "",
+                              flatNo: r.flatNo || "",
+                              floor: r.floor || "",
+                              flatType: r.flatType || "2BHK",
+                              familyMembersCount: r.familyMembersCount || 0,
+                              familyMembers: r.familyMembers || [],
+                            });
+                            setEditResidentId(r._id);
+                            setShowModal(true);
+                          }}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition"
+                          title="Edit"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(r._id)}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition"
+                          title="Delete"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -391,7 +428,10 @@ export default function Residents() {
                 </p>
               </div>
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false);
+                  setEditResidentId(null);
+                }}
                 className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition"
               >
                 <svg
@@ -471,7 +511,7 @@ export default function Residents() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-600 mb-1.5">
-                    Password *
+                    Password {editResidentId ? "(Leave blank to keep current)" : "*"}
                   </label>
                   <input
                     type="password"
@@ -480,7 +520,7 @@ export default function Residents() {
                       setForm({ ...form, password: e.target.value });
                       setErrors({ ...errors, password: "" });
                     }}
-                    placeholder="Enter Password"
+                    placeholder={editResidentId ? "Enter new password..." : "Enter Password"}
                     className={inputCls("password")}
                   />
                   {errors.password && (
@@ -571,7 +611,10 @@ export default function Residents() {
             {/* footer */}
             <div className="px-6 pb-5 flex gap-3">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => {
+                  setShowModal(false);
+                  setEditResidentId(null);
+                }}
                 className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
               >
                 Cancel
@@ -605,7 +648,7 @@ export default function Residents() {
                     Saving…
                   </>
                 ) : (
-                  "Add Resident"
+                  editResidentId ? "Save Changes" : "Add Resident"
                 )}
               </button>
             </div>
