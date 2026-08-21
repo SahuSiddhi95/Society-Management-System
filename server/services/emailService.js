@@ -22,11 +22,11 @@ exports.sendMaintenanceEmail = async (user, maintenance) => {
   const mailOptions = {
     from: process.env.EMAIL_USER || "Society Admin <admin@society.com>",
     to: user.email,
-    subject: `Maintenance Due - ${maintenance.month} ${maintenance.year}`,
+    subject: `${maintenance.category || 'Maintenance'} Due - ${maintenance.month} ${maintenance.year}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hello ${user.name},</h2>
-        <p>Your maintenance dues for <strong>${maintenance.month} ${maintenance.year}</strong> have been generated.</p>
+        <p>Your <strong>${maintenance.category || 'Maintenance'}</strong> dues for <strong>${maintenance.month} ${maintenance.year}</strong> have been generated.</p>
         <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 0; font-size: 16px;">Amount Due: <strong style="font-size: 24px; color: #4f46e5;">₹${maintenance.amount}</strong></p>
           <p style="margin: 10px 0 0 0; color: #64748b;">Due Date: ${new Date(maintenance.dueDate).toLocaleDateString("en-IN")}</p>
@@ -58,11 +58,11 @@ exports.sendMaintenanceReminderEmail = async (user, maintenance) => {
   const mailOptions = {
     from: process.env.EMAIL_USER || "Society Admin <admin@society.com>",
     to: user.email,
-    subject: `Reminder: Maintenance Due - ${maintenance.month} ${maintenance.year}`,
+    subject: `Reminder: ${maintenance.category || 'Maintenance'} Due - ${maintenance.month} ${maintenance.year}`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hello ${user.name},</h2>
-        <p>This is a gentle reminder that your maintenance dues for <strong>${maintenance.month} ${maintenance.year}</strong> are pending.</p>
+        <p>This is a gentle reminder that your <strong>${maintenance.category || 'Maintenance'}</strong> dues for <strong>${maintenance.month} ${maintenance.year}</strong> are pending.</p>
         <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 0; font-size: 16px;">Amount Due: <strong style="font-size: 24px; color: #4f46e5;">₹${maintenance.amount}</strong></p>
           <p style="margin: 10px 0 0 0; color: #64748b;">Due Date: ${new Date(maintenance.dueDate).toLocaleDateString("en-IN")}</p>

@@ -21,6 +21,7 @@ const maintenanceSchema = new mongoose.Schema({
 
   category: {
     type: String,
+    enum: ["Maintenance", "Parking", "Water", "Sinking Fund", "Event", "Club House", "Security"],
     default: "Maintenance",
   },
   

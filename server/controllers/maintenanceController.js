@@ -141,7 +141,7 @@ exports.generateDues = async (req, res) => {
     let smsSent = 0;
     let inAppSent = 0;
 
-    for (const resident of residents) {
+    const generationPromises = residents.map(async (resident) => {
       const exists = await Maintenance.findOne({
         resident: resident._id,
         month,
@@ -161,18 +161,26 @@ exports.generateDues = async (req, res) => {
           createdBy: req.user._id
         });
 
-        dues.push(due);
-
-        // Send multi-channel notifications (don't fail generation if these throw)
+        // Send multi-channel notifications concurrently
         const [emailRes, smsRes, inAppRes] = await Promise.all([
           emailService.sendMaintenanceEmail(resident, due).catch(() => ({ success: false })),
           smsService.sendMaintenanceSMS(resident, due).catch(() => ({ success: false })),
           notificationService.sendInAppNotification(resident, due).catch(() => ({ success: false }))
         ]);
 
-        if (emailRes.success) emailsSent++;
-        if (smsRes.success) smsSent++;
-        if (inAppRes.success) inAppSent++;
+        return { due, emailRes, smsRes, inAppRes };
+      }
+      return null;
+    });
+
+    const results = await Promise.all(generationPromises);
+
+    for (const res of results) {
+      if (res) {
+        dues.push(res.due);
+        if (res.emailRes.success) emailsSent++;
+        if (res.smsRes.success) smsSent++;
+        if (res.inAppRes.success) inAppSent++;
       }
     }
 
