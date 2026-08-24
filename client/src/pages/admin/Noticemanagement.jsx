@@ -95,11 +95,11 @@ const isToday = (iso) => {
   return d.getDate() === t.getDate() && d.getMonth() === t.getMonth() && d.getFullYear() === t.getFullYear();
 };
 const createdByName = (createdBy) => {
+  console.log("createdBy", createdBy);
   if (!createdBy) return "Unknown";
   if (typeof createdBy === "string") return createdBy;
   return createdBy.name || createdBy.fullName || createdBy.email || "Unknown";
 };
-
 /* ------------------------------------------------------------------ */
 /*  Badge                                                               */
 /* ------------------------------------------------------------------ */
@@ -745,72 +745,72 @@ export default function NoticeManagementPage({ category }) {
 
   return (
     <>
-        {/* Page */}
-        <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 bg-gray-50/60">
-          <Toaster position="top-right" toastOptions={{
-            className: "rounded-2xl! shadow-lg! text-sm!",
-            success: { iconTheme: { primary: "#4f46e5", secondary: "#fff" } },
-          }} />
+      {/* Page */}
+      <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8 bg-gray-50/60">
+        <Toaster position="top-right" toastOptions={{
+          className: "rounded-2xl! shadow-lg! text-sm!",
+          success: { iconTheme: { primary: "#4f46e5", secondary: "#fff" } },
+        }} />
 
-          <div className="mx-auto max-w-7xl space-y-6">
+        <div className="mx-auto max-w-7xl space-y-6">
 
-            {/* Header */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Notice Management</h1>
-                <p className="mt-1 text-sm text-gray-500">Create, publish, organize, and manage society notices to keep all residents informed.</p>
-              </div>
-              <button
-                onClick={() => setCreateOpen(true)}
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-200 transition-all hover:bg-indigo-700 hover:shadow-md active:scale-[.98]"
-              >
-                <Plus className="h-4 w-4" /> Create Notice
-              </button>
+          {/* Header */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight text-gray-900">Notice Management</h1>
+              <p className="mt-1 text-sm text-gray-500">Create, publish, organize, and manage society notices to keep all residents informed.</p>
             </div>
-
-            {/* Stats */}
-            {loading ? (
-              <StatsSkeleton />
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <NoticeStatsCard icon={FileText} label="Total Notices" value={stats.total} accent="indigo" />
-                <NoticeStatsCard icon={Calendar} label="Published Today" value={stats.publishedToday} accent="green" />
-                <NoticeStatsCard icon={Tag} label="Categories" value={stats.categories} accent="purple" />
-                <NoticeStatsCard
-                  icon={Megaphone}
-                  label="Latest Notice"
-                  value={stats.latest ? stats.latest.title : "—"}
-                  sub={stats.latest ? fmtDate(stats.latest.createdAt) : undefined}
-                  accent="orange"
-                />
-              </div>
-            )}
-
-            {/* Filters */}
-            <SearchFilterBar filters={filters} setFilters={setFilters} />
-
-            {/* Table / Empty / Loading */}
-            {loading ? (
-              <TableSkeleton />
-            ) : filteredNotices.length === 0 ? (
-              <EmptyState onCreate={() => setCreateOpen(true)} filtered={!!isFiltering} />
-            ) : (
-              <NoticeTable notices={filteredNotices} onView={openView} onEdit={openEdit} onDelete={openDelete} />
-            )}
+            <button
+              onClick={() => setCreateOpen(true)}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-200 transition-all hover:bg-indigo-700 hover:shadow-md active:scale-[.98]"
+            >
+              <Plus className="h-4 w-4" /> Create Notice
+            </button>
           </div>
 
-          {/* Modals & Drawer */}
-          <CreateNoticeModal open={createOpen} onClose={() => setCreateOpen(false)} onCreated={handleCreated} />
-          <EditNoticeModal open={editOpen} onClose={() => setEditOpen(false)} onUpdated={handleUpdated} notice={activeNotice} />
-          <DeleteNoticeModal open={deleteOpen} onClose={() => setDeleteOpen(false)} onDeleted={handleDeleted} notice={activeNotice} />
-          <NoticeDetailsDrawer
-            open={drawerOpen}
-            onClose={() => setDrawerOpen(false)}
-            notice={activeNotice}
-            onEdit={openEdit}
-            onDelete={openDelete}
-          />
-        </main>
+          {/* Stats */}
+          {loading ? (
+            <StatsSkeleton />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <NoticeStatsCard icon={FileText} label="Total Notices" value={stats.total} accent="indigo" />
+              <NoticeStatsCard icon={Calendar} label="Published Today" value={stats.publishedToday} accent="green" />
+              <NoticeStatsCard icon={Tag} label="Categories" value={stats.categories} accent="purple" />
+              <NoticeStatsCard
+                icon={Megaphone}
+                label="Latest Notice"
+                value={stats.latest ? stats.latest.title : "—"}
+                sub={stats.latest ? fmtDate(stats.latest.createdAt) : undefined}
+                accent="orange"
+              />
+            </div>
+          )}
+
+          {/* Filters */}
+          <SearchFilterBar filters={filters} setFilters={setFilters} />
+
+          {/* Table / Empty / Loading */}
+          {loading ? (
+            <TableSkeleton />
+          ) : filteredNotices.length === 0 ? (
+            <EmptyState onCreate={() => setCreateOpen(true)} filtered={!!isFiltering} />
+          ) : (
+            <NoticeTable notices={filteredNotices} onView={openView} onEdit={openEdit} onDelete={openDelete} />
+          )}
+        </div>
+
+        {/* Modals & Drawer */}
+        <CreateNoticeModal open={createOpen} onClose={() => setCreateOpen(false)} onCreated={handleCreated} />
+        <EditNoticeModal open={editOpen} onClose={() => setEditOpen(false)} onUpdated={handleUpdated} notice={activeNotice} />
+        <DeleteNoticeModal open={deleteOpen} onClose={() => setDeleteOpen(false)} onDeleted={handleDeleted} notice={activeNotice} />
+        <NoticeDetailsDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          notice={activeNotice}
+          onEdit={openEdit}
+          onDelete={openDelete}
+        />
+      </main>
     </>
   );
 }

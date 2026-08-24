@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import { createUser, getAllUsers, updateUser } from "../../api/Admin/userApi";
+import { createUser, getAllUsers, updateUser, deleteUser } from "../../api/Admin/userApi";
+import hotToast, { Toaster } from "react-hot-toast";
 // ── mock API shim – replace with your real API calls ──────────────────────────
 // const mockResidents = [
 //   { id: 1, name: "Priya Sharma",    unit: "A-101", phone: "98765 43210", email: "priya@mail.com",   status: "active",  joinDate: "2023-01-15", avatar: "PS" },
@@ -155,10 +156,44 @@ export default function Residents() {
   };
 
   const handleDelete = (id) => {
-    const r = residents.find((x) => x.id === id);
-    setResidents((prev) => prev.filter((x) => x.id !== id));
-    setView(null);
-    showToast(`${r?.name} removed.`, "danger");
+    const r = residents.find((x) => x._id === id);
+    
+    hotToast((t) => (
+      <div className="flex flex-col gap-3">
+        <p className="text-sm font-medium text-gray-800">
+          Are you sure you want to remove <strong>{r?.name}</strong>?
+        </p>
+        <div className="flex gap-2 justify-end">
+          <button
+            className="px-3 py-1.5 text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition"
+            onClick={() => hotToast.dismiss(t.id)}
+          >
+            Cancel
+          </button>
+          <button
+            className="px-3 py-1.5 text-xs font-semibold bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+            onClick={async () => {
+              hotToast.dismiss(t.id);
+              try {
+                await deleteUser(id);
+                showToast(`${r?.name} removed.`, "danger");
+                
+                const users = await getAllUsers();
+                setResidents(users.filter((u) => u.role !== "admin"));
+                setView(null);
+              } catch (error) {
+                showToast(
+                  error?.message || "Failed to remove resident",
+                  "danger"
+                );
+              }
+            }}
+          >
+            Confirm Delete
+          </button>
+        </div>
+      </div>
+    ), { duration: Infinity, position: "top-center" });
   };
 
   const inputCls = (field) =>
@@ -169,6 +204,7 @@ export default function Residents() {
 
   return (
     <>
+      <Toaster />
       {/* ── Toast ─────────────────────────────────────────────────────────── */}
       {toast && (
         <div

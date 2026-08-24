@@ -62,3 +62,24 @@ export const updateUser = async (id, userData) => {
     );
   }
 };
+
+// Delete User
+export const deleteUser = async (id) => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const { data } = await API.delete(`/admin/users/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return data;
+  } catch (error) {
+    throw (
+      error.response?.data || {
+        message: "Failed to delete user",
+      }
+    );
+  }
+};

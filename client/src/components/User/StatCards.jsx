@@ -38,7 +38,7 @@ export default function StatCards({
       iconBg: "bg-gradient-to-br from-indigo-100 to-indigo-200 text-indigo-700",
       cardBg: "bg-white",
       val: fmt(pendingAmount),
-      label: "Due This Month",
+      label: "Total Outstanding Dues",
       chip: pendingDues.length > 0 ? `${pendingDues.length} Pending` : "All Clear",
       chipCls:
         pendingDues.length > 0

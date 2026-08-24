@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import Icon from "./shared/Icon";
-import useNotifications from "../../hooks/useNotifications";
+import { useNotifications } from "../../../context/Notificationcontext";
 import API from "../../api/axios";
 
 const icons = {
