@@ -17,8 +17,8 @@ const connectDB = async () => {
       }
     }
   } catch (error) {
-    console.error(error);
-    process.exit(1);
+    console.error("❌ MongoDB Connection Error:", error.message);
+    console.error("👉 Please add your MongoDB Atlas URI to MONGO_URI in server/.env file.");
   }
 };
 

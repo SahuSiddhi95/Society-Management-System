@@ -1,34 +1,120 @@
 import API from "../../api/axios";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 /**
  * MaintenanceDue — fetches and displays the current user's pending maintenance
- * dues from GET /api/maintenance/my-dues (no more hardcoded data).
+ * dues from GET /api/maintenance/my-dues with direct Razorpay payment integration.
  */
-export default function MaintenanceDue({ setActiveNav }) {
-  const [dues, setDues] = useState([]);
+export default function MaintenanceDue({ setActiveNav, user, dues: duesProp }) {
+  const [fetchedDues, setFetchedDues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [payingId, setPayingId] = useState(null);
+  const navigate = useNavigate();
+
+  const fetchDues = async () => {
+    try {
+      setLoading(true);
+      const res = await API.get("/maintenance/my-dues");
+      const list = Array.isArray(res.data) ? res.data : res.data?.dues || [];
+      // Only show pending / unpaid dues
+      const pending = list.filter(
+        (d) => d.status === "Pending" || d.status === "Unpaid" || d.status === "Overdue" || !d.status
+      );
+      setFetchedDues(pending);
+    } catch (err) {
+      setError("Could not load dues.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchDues = async () => {
-      try {
-        setLoading(true);
-        const res = await API.get("/maintenance/my-dues");
-        const list = Array.isArray(res.data) ? res.data : res.data?.dues || [];
-        // Only show pending / unpaid dues
-        const pending = list.filter(
-          (d) => d.status === "Pending" || d.status === "Unpaid" || !d.status
-        );
-        setDues(pending);
-      } catch (err) {
-        setError("Could not load dues.");
-      } finally {
-        setLoading(false);
+    if (!duesProp) fetchDues();
+    else setLoading(false);
+  }, [duesProp]);
+
+  const dues = Array.isArray(duesProp)
+    ? duesProp.filter((d) => d.status === "Pending" || d.status === "Unpaid" || d.status === "Overdue" || !d.status)
+    : fetchedDues;
+
+
+  const handlePayAll = async () => {
+    if (dues.length === 0) return;
+
+    setPayingId("ALL");
+    try {
+      const maintenanceIds = dues.map((d) => d._id);
+      const { data } = await API.post("/transactions/create-all-order", { maintenanceIds });
+
+      if (!data.success) {
+        throw new Error(data.message || "Failed to initialize bulk payment");
       }
-    };
-    fetchDues();
-  }, []);
+
+      if (typeof window.Razorpay === "undefined") {
+        throw new Error("Razorpay SDK failed to load. Please refresh the page.");
+      }
+
+      const options = {
+        key: data.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_TTxYjBQ1SKwckh",
+        amount: data.amount,
+        currency: data.currency || "INR",
+        name: "Society Management System",
+        description: `Pay All Pending Dues (${data.duesCount} Months)`,
+        order_id: data.orderId,
+        handler: async function (response) {
+          try {
+            setPayingId("ALL");
+            toast.loading("Verifying payment...", { id: "razorpay-verify" });
+            const verifyRes = await API.post("/transactions/verify-all-payment", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              maintenanceIds: data.maintenanceIds,
+            });
+
+            if (verifyRes.data.success) {
+              toast.success("All dues paid & verified successfully!", { id: "razorpay-verify" });
+              fetchDues();
+              window.dispatchEvent(new CustomEvent("dues-updated"));
+            } else {
+              toast.error(verifyRes.data.message || "Payment verification failed!", { id: "razorpay-verify" });
+            }
+          } catch (verifyErr) {
+            toast.error("Payment verification failed", { id: "razorpay-verify" });
+          } finally {
+            setPayingId(null);
+          }
+        },
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+          contact: user?.phone || user?.mobile || "",
+        },
+        theme: {
+          color: "#4F46E5",
+        },
+        modal: {
+          ondismiss: function () {
+            setPayingId(null);
+            toast("Payment cancelled", { icon: "ℹ️" });
+          },
+        },
+      };
+
+      const razorpayInstance = new window.Razorpay(options);
+      razorpayInstance.on("payment.failed", function (response) {
+        setPayingId(null);
+        toast.error(`Payment Failed: ${response.error?.description || "Transaction failed"}`);
+      });
+      razorpayInstance.open();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message || "Payment initiation failed");
+      setPayingId(null);
+    }
+  };
 
   // Calculate total
   const total = dues.reduce((sum, d) => sum + (d.amount || 0), 0);
@@ -122,13 +208,15 @@ export default function MaintenanceDue({ setActiveNav }) {
           </div>
 
           <button
-            onClick={() => setActiveNav?.("dues")}
-            className="mt-auto w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 active:scale-[0.98] transition-all text-white font-bold text-sm rounded-xl py-3.5 flex items-center justify-center gap-2 shadow-md shadow-orange-500/20 hover:shadow-orange-500/40"
+            onClick={handlePayAll}
+            disabled={payingId !== null}
+            className="mt-auto w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 active:scale-[0.98] disabled:opacity-60 transition-all text-white font-bold text-sm rounded-xl py-3.5 flex items-center justify-center gap-2 shadow-md shadow-orange-500/20 hover:shadow-orange-500/40"
           >
-            💳 Pay Now
+            {payingId ? "Processing…" : `💳 Pay All Dues (${fmt(total)})`}
           </button>
         </div>
       )}
     </div>
   );
+
 }

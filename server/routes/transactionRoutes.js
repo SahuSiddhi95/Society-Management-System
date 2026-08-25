@@ -3,10 +3,15 @@
 
     const {
       payMaintenance,
+      createRazorpayOrder,
+      verifyRazorpayPayment,
+      createAllRazorpayOrder,
+      verifyAllRazorpayPayment,
       recordManualPayment,
       getMyTransactions,
       getAllTransactions,
       getTransactionStats,
+      deleteTransactionsByDateRange,
     } = require("../controllers/transactionController");
 
     const {protect} = require("../middleware/authMiddleware");
@@ -15,6 +20,12 @@
     const upload = require("../middleware/upload");
 
     router.post("/pay", protect, payMaintenance);
+    router.post("/create-order", protect, createRazorpayOrder);
+    router.post("/verify-payment", protect, verifyRazorpayPayment);
+
+    router.post("/create-all-order", protect, createAllRazorpayOrder);
+    router.post("/verify-all-payment", protect, verifyAllRazorpayPayment);
+
     
     router.post("/manual-payment", protect, adminOnly, upload.single("proof"), recordManualPayment);
 
@@ -24,4 +35,8 @@
 
     router.get("/admin/stats", protect, adminOnly, getTransactionStats);
 
-    module.exports = router;  
+    router.delete("/admin/delete-range", protect, adminOnly, deleteTransactionsByDateRange);
+
+    module.exports = router;
+
+

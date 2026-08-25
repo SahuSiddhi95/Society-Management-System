@@ -1,8 +1,10 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://society-management-system-qcfx.onrender.com/api",
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001/api",
 });
+
+
 
 // Add token automatically
 API.interceptors.request.use(

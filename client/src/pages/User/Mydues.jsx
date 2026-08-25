@@ -37,7 +37,7 @@ const STATUS_ICON = {
 
 // ─── component ──────────────────────────────────────────────
 export default function MyDues() {
-  const { fetchDashboardData, dues: propDues = [] } = useOutletContext();
+  const { fetchDashboardData, user, dues: propDues = [] } = useOutletContext();
   const [dues, setDues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -62,24 +62,174 @@ export default function MyDues() {
     fetchDues();
   }, [fetchDues]);
 
-  // ── pay a due ────────────────────────────────────────────
+  // ── pay a due with Razorpay Payment Gateway ───────────────
   const handlePay = async (maintenanceId) => {
     setPayingId(maintenanceId);
     setPayError(null);
     try {
-      await API.post("/transactions/pay", { maintenanceId });
+      // 1. Create Razorpay order on backend
+      const { data } = await API.post("/transactions/create-order", { maintenanceId });
 
-      toast.success("Payment successful!");
+      if (!data.success) {
+        throw new Error(data.message || "Failed to initialize payment");
+      }
 
-      // Refresh dues so UI reflects the new "Paid" status
-      await fetchDues();
-      if (fetchDashboardData) fetchDashboardData();
-      window.dispatchEvent(new CustomEvent("dues-updated"));
+      // Check if Razorpay Checkout script is loaded
+      if (typeof window.Razorpay === "undefined") {
+        throw new Error("Razorpay SDK failed to load. Please refresh the page and try again.");
+      }
+
+      // 2. Configure Razorpay checkout options
+      const options = {
+        key: data.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_TTxYjBQ1SKwckh",
+
+        amount: data.amount,
+        currency: data.currency || "INR",
+        name: "Society Management System",
+        description: `${data.maintenance?.month || "Maintenance"} Dues Payment`,
+        order_id: data.orderId,
+        handler: async function (response) {
+          try {
+            setPayingId(maintenanceId);
+            toast.loading("Verifying payment...", { id: "razorpay-verify" });
+            
+            // 3. Verify Razorpay payment signature on backend
+            const verifyRes = await API.post("/transactions/verify-payment", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              maintenanceId: data.maintenance?._id || maintenanceId,
+
+            });
+
+            if (verifyRes.data.success) {
+              toast.success("Payment successful & verified!", { id: "razorpay-verify" });
+              await fetchDues();
+              if (fetchDashboardData) fetchDashboardData();
+              window.dispatchEvent(new CustomEvent("dues-updated"));
+            } else {
+              toast.error(verifyRes.data.message || "Payment verification failed!", { id: "razorpay-verify" });
+            }
+          } catch (verifyErr) {
+            const msg = verifyErr?.response?.data?.message || verifyErr.message || "Payment verification failed";
+            toast.error(msg, { id: "razorpay-verify" });
+            setPayError(msg);
+          } finally {
+            setPayingId(null);
+          }
+        },
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+          contact: user?.phone || user?.mobile || "",
+        },
+        notes: {
+          maintenanceId: maintenanceId,
+        },
+        theme: {
+          color: "#4F46E5",
+        },
+        modal: {
+          ondismiss: function () {
+            setPayingId(null);
+            toast("Payment cancelled", { icon: "ℹ️" });
+          },
+        },
+      };
+
+      const razorpayInstance = new window.Razorpay(options);
+      razorpayInstance.on("payment.failed", function (response) {
+        setPayingId(null);
+        toast.error(`Payment Failed: ${response.error?.description || "Transaction failed"}`);
+      });
+      razorpayInstance.open();
     } catch (err) {
-      const message = err?.response?.data?.message || err.message || "Payment failed";
+      const message = err?.response?.data?.message || err.message || "Payment initiation failed";
       setPayError(message);
       toast.error(message);
-    } finally {
+      setPayingId(null);
+    }
+  };
+
+
+  // ── pay ALL dues with Razorpay Payment Gateway ────────────
+  const handlePayAll = async () => {
+    if (unpaid.length === 0) return;
+    setPayingId("ALL");
+    setPayError(null);
+    try {
+      const maintenanceIds = unpaid.map((d) => d._id);
+      const { data } = await API.post("/transactions/create-all-order", { maintenanceIds });
+
+      if (!data.success) {
+        throw new Error(data.message || "Failed to initialize bulk payment");
+      }
+
+      if (typeof window.Razorpay === "undefined") {
+        throw new Error("Razorpay SDK failed to load. Please refresh the page and try again.");
+      }
+
+      const options = {
+        key: data.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_TTxYjBQ1SKwckh",
+        amount: data.amount,
+        currency: data.currency || "INR",
+        name: "Society Management System",
+        description: `Pay All Dues (${data.duesCount} Months)`,
+        order_id: data.orderId,
+        handler: async function (response) {
+          try {
+            setPayingId("ALL");
+            toast.loading("Verifying total payment...", { id: "razorpay-verify" });
+
+            const verifyRes = await API.post("/transactions/verify-all-payment", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              maintenanceIds: data.maintenanceIds,
+            });
+
+            if (verifyRes.data.success) {
+              toast.success("All dues paid & verified successfully!", { id: "razorpay-verify" });
+              await fetchDues();
+              if (fetchDashboardData) fetchDashboardData();
+              window.dispatchEvent(new CustomEvent("dues-updated"));
+            } else {
+              toast.error(verifyRes.data.message || "Bulk payment verification failed!", { id: "razorpay-verify" });
+            }
+          } catch (verifyErr) {
+            const msg = verifyErr?.response?.data?.message || verifyErr.message || "Payment verification failed";
+            toast.error(msg, { id: "razorpay-verify" });
+            setPayError(msg);
+          } finally {
+            setPayingId(null);
+          }
+        },
+        prefill: {
+          name: user?.name || "",
+          email: user?.email || "",
+          contact: user?.phone || user?.mobile || "",
+        },
+        theme: {
+          color: "#4F46E5",
+        },
+        modal: {
+          ondismiss: function () {
+            setPayingId(null);
+            toast("Payment cancelled", { icon: "ℹ️" });
+          },
+        },
+      };
+
+      const razorpayInstance = new window.Razorpay(options);
+      razorpayInstance.on("payment.failed", function (response) {
+        setPayingId(null);
+        toast.error(`Payment Failed: ${response.error?.description || "Transaction failed"}`);
+      });
+      razorpayInstance.open();
+    } catch (err) {
+      const message = err?.response?.data?.message || err.message || "Payment initiation failed";
+      setPayError(message);
+      toast.error(message);
       setPayingId(null);
     }
   };
@@ -126,17 +276,30 @@ export default function MyDues() {
 
           {/* ── Summary cards ── */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-              <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">
-                Pending Dues
-              </p>
-              <p className="text-3xl font-bold text-slate-800">
-                {loading ? "—" : `₹${totalUnpaid.toLocaleString("en-IN")}`}
-              </p>
-              <p className="text-xs text-amber-600 font-medium mt-1">
-                {loading ? "" : `${unpaid.length} month${unpaid.length !== 1 ? "s" : ""} unpaid`}
-              </p>
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex flex-col justify-between">
+              <div>
+                <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">
+                  Pending Dues
+                </p>
+                <p className="text-3xl font-bold text-slate-800">
+                  {loading ? "—" : `₹${totalUnpaid.toLocaleString("en-IN")}`}
+                </p>
+                <p className="text-xs text-amber-600 font-medium mt-1">
+                  {loading ? "" : `${unpaid.length} month${unpaid.length !== 1 ? "s" : ""} unpaid`}
+                </p>
+              </div>
+
+              {!loading && unpaid.length > 0 && (
+                <button
+                  onClick={handlePayAll}
+                  disabled={payingId !== null}
+                  className="mt-4 w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs rounded-xl py-2.5 px-4 shadow-sm transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {payingId === "ALL" ? "Processing…" : `💳 Pay All Dues (₹${totalUnpaid.toLocaleString("en-IN")})`}
+                </button>
+              )}
             </div>
+
 
             <div className="bg-green-50 border border-green-200 rounded-2xl p-5">
               <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mb-2">

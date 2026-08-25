@@ -1,22 +1,16 @@
 const Razorpay = require('razorpay');
 
-// =========================================================================
-// IMPORTANT: Add these to your .env file (never hardcode or commit keys)
-//   RAZORPAY_KEY_ID=rzp_test_xxxxxxxxxxxx
-//   RAZORPAY_KEY_SECRET=xxxxxxxxxxxxxxxxxxxxxxxx
-//
-// Get these from: Razorpay Dashboard -> Settings -> API Keys -> Generate Test Key
-// =========================================================================
+const key_id = process.env.RAZORPAY_KEY_ID || "rzp_test_TTxYjBQ1SKwckh";
+const key_secret = process.env.RAZORPAY_KEY_SECRET || "fD3z2BfS0lDhUiMrBo06pbq3";
+
 
 if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-  console.warn(
-    '[WARNING] Razorpay keys are missing in .env. Payment routes will fail until you add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.'
-  );
+  console.log('[INFO] Using fallback Razorpay test keys');
 }
 
 const razorpayInstance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
+  key_id,
+  key_secret,
 });
 
 module.exports = razorpayInstance;

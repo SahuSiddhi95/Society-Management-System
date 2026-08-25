@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 
 const RecordPaymentModal = ({ record, onClose, onUpdated }) => {
   const [method, setMethod] = useState("Cash");
+  const [amount, setAmount] = useState(record.amount || 0);
   const [referenceNo, setReferenceNo] = useState("");
   const [proof, setProof] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -17,6 +18,7 @@ const RecordPaymentModal = ({ record, onClose, onUpdated }) => {
       const formData = new FormData();
       formData.append("maintenanceId", record._id);
       formData.append("method", method);
+      formData.append("amount", amount);
       formData.append("referenceNo", referenceNo);
       if (proof) {
         formData.append("proof", proof);
@@ -27,7 +29,7 @@ const RecordPaymentModal = ({ record, onClose, onUpdated }) => {
       });
 
       if (res.data.success) {
-        toast.success("Payment recorded successfully");
+        toast.success(res.data.message || "Offline payment recorded successfully");
         onUpdated();
         onClose();
       }
@@ -45,10 +47,13 @@ const RecordPaymentModal = ({ record, onClose, onUpdated }) => {
         {/* Header */}
         <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-100 text-indigo-600 rounded-xl">
+            <div className="p-2 bg-emerald-100 text-emerald-600 rounded-xl">
               <CreditCard className="w-5 h-5" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900">Record Payment</h3>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">Record Offline Payment</h3>
+              <p className="text-xs text-gray-400">Mark cash/cheque payment from resident</p>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -59,13 +64,13 @@ const RecordPaymentModal = ({ record, onClose, onUpdated }) => {
         </div>
 
         {/* Form Content */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5">
           
           {/* Summary Box */}
-          <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100 space-y-3">
+          <div className="bg-emerald-50/50 rounded-2xl p-4 border border-emerald-100/80 space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500 flex items-center gap-2">
-                <User className="w-4 h-4 text-gray-400" />
+                <User className="w-4 h-4 text-emerald-600" />
                 Resident
               </span>
               <span className="font-semibold text-gray-900">
@@ -75,17 +80,17 @@ const RecordPaymentModal = ({ record, onClose, onUpdated }) => {
             
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-gray-400" />
-                Month
+                <Calendar className="w-4 h-4 text-emerald-600" />
+                Period
               </span>
               <span className="font-semibold text-gray-900">
                 {record.month} {record.year}
               </span>
             </div>
 
-            <div className="pt-3 mt-3 border-t border-gray-200/60 flex items-center justify-between">
-              <span className="text-gray-500">Amount Due</span>
-              <span className="text-xl font-black text-gray-900">
+            <div className="pt-2 mt-2 border-t border-emerald-200/50 flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">Bill Amount Due</span>
+              <span className="text-lg font-black text-emerald-700">
                 ₹{record.amount?.toLocaleString("en-IN")}
               </span>
             </div>
@@ -93,24 +98,38 @@ const RecordPaymentModal = ({ record, onClose, onUpdated }) => {
 
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Payment Method
               </label>
               <select
                 value={method}
                 onChange={(e) => setMethod(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-700 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
               >
-                <option value="Cash">Cash</option>
-                <option value="Check">Check</option>
-                <option value="Bank Transfer">Bank Transfer (NEFT/RTGS)</option>
-                <option value="UPI">UPI (Manual entry)</option>
+                <option value="Cash">💵 Cash (Offline Cash Received)</option>
+                <option value="Cheque">🏦 Cheque</option>
+                <option value="Bank Transfer">🏛️ Bank Transfer (NEFT/RTGS)</option>
+                <option value="UPI">📱 UPI (Manual Entry)</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                Amount Received (₹)
+              </label>
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+                min="1"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Reference / Receipt No. (Optional)
               </label>
               <div className="relative">
@@ -121,24 +140,25 @@ const RecordPaymentModal = ({ record, onClose, onUpdated }) => {
                   type="text"
                   value={referenceNo}
                   onChange={(e) => setReferenceNo(e.target.value)}
-                  placeholder="e.g. CHQ-12345 or UPI-123..."
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                  placeholder="Auto-generated if left blank (e.g. CASH_10293)"
+                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200"
                 />
               </div>
             </div>
             
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Payment Proof (Optional)
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                Payment Proof / Cash Receipt Image (Optional)
               </label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setProof(e.target.files[0])}
-                className="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all border border-gray-200 rounded-xl bg-white p-1"
+                className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-all border border-gray-200 rounded-xl bg-white p-1"
               />
             </div>
           </div>
+
 
           <div className="pt-2 flex gap-3">
             <button

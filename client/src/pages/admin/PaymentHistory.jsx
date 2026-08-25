@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { getPaymentHistory } from "../../api/Admin/paymentApi";
+import API from "../../api/axios";
+import toast from "react-hot-toast";
 import {
   Search,
   RotateCcw,
@@ -14,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUpDown,
+  Trash2,
 } from "lucide-react";
 import PrintableReceipt from "../../components/Admin/PrintableReceipt";
 
@@ -37,6 +40,13 @@ const PaymentHistory = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
+  // Bulk Delete Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteOption, setDeleteOption] = useState("1Y"); // 1Y, 5Y, 10Y, CUSTOM
+  const [delStartDate, setDelStartDate] = useState("");
+  const [delEndDate, setDelEndDate] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
   // Table
   const [sortOrder, setSortOrder] = useState("desc"); // desc = latest first
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,6 +54,7 @@ const PaymentHistory = () => {
   // View details modal
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [printingPayment, setPrintingPayment] = useState(null);
+
 
   useEffect(() => {
     fetchPayments();
@@ -212,6 +223,33 @@ const PaymentHistory = () => {
     setPrintingPayment(payment);
   };
 
+  const handleBulkDelete = async () => {
+    try {
+      setDeleting(true);
+      let payload = {};
+      if (deleteOption === "1Y") payload = { olderThanYears: 1 };
+      else if (deleteOption === "5Y") payload = { olderThanYears: 5 };
+      else if (deleteOption === "10Y") payload = { olderThanYears: 10 };
+      else if (deleteOption === "CUSTOM") {
+        if (!delStartDate && !delEndDate) {
+          toast.error("Please select a date range to delete");
+          setDeleting(false);
+          return;
+        }
+        payload = { startDate: delStartDate, endDate: delEndDate };
+      }
+
+      const { data } = await API.delete("/transactions/admin/delete-range", { data: payload });
+      toast.success(data.message || "Transaction records deleted successfully!");
+      setShowDeleteModal(false);
+      fetchPayments();
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message || "Failed to delete transaction records");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <>
       <div className={printingPayment ? "hidden print:hidden" : "block"}>
@@ -225,7 +263,16 @@ const PaymentHistory = () => {
                 View all successful maintenance payments made by residents.
               </p>
             </div>
+
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-sm font-semibold transition self-start sm:self-auto"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete Records by Date Range
+            </button>
           </div>
+
 
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
@@ -492,6 +539,96 @@ const PaymentHistory = () => {
           monthLabel={monthLabel}
         />
       )}
+
+      {/* Bulk Delete Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowDeleteModal(false)} />
+          <div className="relative bg-white rounded-2xl p-6 shadow-2xl max-w-md w-full border border-gray-100 z-10">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
+              <div className="flex items-center gap-2 text-red-600">
+                <Trash2 className="w-5 h-5" />
+                <h3 className="font-bold text-lg text-gray-800">Delete Payment History</h3>
+              </div>
+              <button onClick={() => setShowDeleteModal(false)} className="text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-xs text-gray-500 mb-4">
+              Select the date range criterion to permanently delete historical payment records:
+            </p>
+
+            <div className="space-y-3 mb-5">
+              {[
+                { id: "1Y", label: "Older than 1 Year" },
+                { id: "5Y", label: "Older than 5 Years" },
+                { id: "10Y", label: "Older than 10 Years" },
+                { id: "CUSTOM", label: "Custom Date Range" },
+              ].map((opt) => (
+                <label
+                  key={opt.id}
+                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition ${
+                    deleteOption === opt.id
+                      ? "border-red-500 bg-red-50/50 text-red-700 font-semibold"
+                      : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="delOpt"
+                    value={opt.id}
+                    checked={deleteOption === opt.id}
+                    onChange={(e) => setDeleteOption(e.target.value)}
+                    className="accent-red-600"
+                  />
+                  <span className="text-sm">{opt.label}</span>
+                </label>
+              ))}
+
+              {deleteOption === "CUSTOM" && (
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <div>
+                    <label className="text-[11px] font-semibold text-gray-500 block mb-1">From Date</label>
+                    <input
+                      type="date"
+                      value={delStartDate}
+                      onChange={(e) => setDelStartDate(e.target.value)}
+                      className="w-full px-3 py-2 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-red-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold text-gray-500 block mb-1">To Date</label>
+                    <input
+                      type="date"
+                      value={delEndDate}
+                      onChange={(e) => setDelEndDate(e.target.value)}
+                      className="w-full px-3 py-2 border rounded-xl text-xs outline-none focus:ring-2 focus:ring-red-200"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={deleting}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition disabled:opacity-50"
+              >
+                {deleting ? "Deleting…" : "Confirm Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       </div>
       <PrintableReceipt payment={printingPayment} />
     </>

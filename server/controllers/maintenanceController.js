@@ -264,3 +264,43 @@ exports.sendReminders = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// Admin Delete Maintenance by Date Range / Years
+exports.deleteMaintenanceByDateRange = async (req, res) => {
+  try {
+    const { startDate, endDate, olderThanYears, status } = req.body;
+    let filter = {};
+
+    if (status && status !== "ALL") {
+      filter.status = status;
+    }
+
+    if (olderThanYears) {
+      const targetDate = new Date();
+      targetDate.setFullYear(targetDate.getFullYear() - Number(olderThanYears));
+      filter.createdAt = { $lte: targetDate };
+    } else if (startDate || endDate) {
+      filter.createdAt = {};
+      if (startDate) filter.createdAt.$gte = new Date(startDate);
+      if (endDate) filter.createdAt.$lte = new Date(endDate + "T23:59:59.999Z");
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Please specify a date range or older than X years option",
+      });
+    }
+
+    const result = await Maintenance.deleteMany(filter);
+    res.status(200).json({
+      success: true,
+      message: `Successfully deleted ${result.deletedCount} maintenance records`,
+      deletedCount: result.deletedCount,
+    });
+  } catch (error) {
+    console.error("Error deleting maintenance records by range:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message || "Failed to delete maintenance records",
+    });
+  }
+};

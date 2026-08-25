@@ -4,7 +4,7 @@ import {
   updateComplaintStatus,
 } from "../../api/complaintApi";
 
-function ComplaintStatusCard() {
+function ComplaintStatusCard({ timeRange = "ALL", startDate = "", endDate = "" }) {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -48,14 +48,36 @@ function ComplaintStatusCard() {
     }
   };
 
+  // Filtered Complaints by date range
+  const filteredComplaints = complaints.filter((c) => {
+    if (timeRange === "ALL") return true;
+    const dateVal = c.createdAt || c.date;
+    if (!dateVal) return true;
+    const d = new Date(dateVal);
+    const now = new Date();
+    let minDate = null;
+    if (timeRange === "THIS_MONTH") minDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    else if (timeRange === "1Y") { minDate = new Date(); minDate.setFullYear(minDate.getFullYear() - 1); }
+    else if (timeRange === "5Y") { minDate = new Date(); minDate.setFullYear(minDate.getFullYear() - 5); }
+    else if (timeRange === "10Y") { minDate = new Date(); minDate.setFullYear(minDate.getFullYear() - 10); }
+
+    if (timeRange === "CUSTOM") {
+      if (startDate && d < new Date(startDate)) return false;
+      if (endDate && d > new Date(endDate + "T23:59:59.999Z")) return false;
+      return true;
+    }
+    return minDate ? d >= minDate : true;
+  });
+
   // Counts
-  const pendingCount = complaints.filter(
+  const pendingCount = filteredComplaints.filter(
     (c) => c.status === "pending"
   ).length;
 
-  const resolvedCount = complaints.filter(
+  const resolvedCount = filteredComplaints.filter(
     (c) => c.status === "resolved"
   ).length;
+
 
   if (loading) {
     return (
@@ -100,15 +122,16 @@ function ComplaintStatusCard() {
 
       {/* Complaint List */}
       <div className="space-y-4">
-        {complaints.length === 0 ? (
+        {filteredComplaints.length === 0 ? (
           <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-            <p className="text-sm font-medium text-gray-500">No complaints found</p>
+            <p className="text-sm font-medium text-gray-500">No complaints found in selected period</p>
           </div>
         ) : (
-          complaints.slice(0, 3).map((c, i) => (
+          filteredComplaints.slice(0, 3).map((c, i) => (
             <div
               key={c._id}
-              className={`flex justify-between gap-3 pb-4 ${i !== complaints.slice(0, 3).length - 1
+              className={`flex justify-between gap-3 pb-4 ${i !== filteredComplaints.slice(0, 3).length - 1
+
                   ? "border-b border-gray-100"
                   : ""
                 } hover:bg-gray-50/50 p-2 -mx-2 rounded-lg transition-colors`}

@@ -1,15 +1,26 @@
 import Icon from "../../assets/icons";
+import { useNavigate } from "react-router-dom";
 
 /**
  * PaymentHistoryCard — shows the last 4 real transactions passed from the dashboard.
  * No more PAYMENTS constant with hardcoded data.
  */
 export default function PaymentHistoryCard({ setActiveNav, transactions = [] }) {
+  const navigate = useNavigate();
+
   // Format amount in Indian style
   const fmt = (n) =>
     typeof n === "number" ? `₹${n.toLocaleString("en-IN")}` : `₹${n || 0}`;
 
   const recent = transactions.slice(0, 4);
+
+  const handleViewAll = () => {
+    if (typeof setActiveNav === "function") {
+      setActiveNav("history");
+    } else {
+      navigate("/user-dashboard/history");
+    }
+  };
 
   return (
     <div className="bg-white border border-slate-200/60 rounded-3xl p-6 lg:p-7 shadow-sm hover:shadow-md transition-shadow duration-300">
@@ -18,12 +29,13 @@ export default function PaymentHistoryCard({ setActiveNav, transactions = [] }) 
           Payment History
         </h3>
         <button
-          onClick={() => setActiveNav("history")}
+          onClick={handleViewAll}
           className="text-indigo-600 text-sm font-semibold hover:text-indigo-700 hover:underline transition-colors"
         >
           View all →
         </button>
       </div>
+
 
       <div className="flex flex-col gap-1 -mx-2">
         {recent.length === 0 ? (

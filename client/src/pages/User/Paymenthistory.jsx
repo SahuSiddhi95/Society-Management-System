@@ -53,6 +53,11 @@ export default function PaymentHistory() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // ── Date Range Filters ──────────────────────────────────
+  const [preset, setPreset] = useState("ALL"); // ALL, 1M, 1Y, 5Y, 10Y, CUSTOM
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   // ── fetch transactions ───────────────────────────────────
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
@@ -71,23 +76,57 @@ export default function PaymentHistory() {
     fetchTransactions();
   }, [fetchTransactions]);
 
+  // ── Filtered Transactions by Date Range ─────────────────
+  const filteredTransactions = transactions.filter((t) => {
+    if (!t.createdAt) return true;
+    const date = new Date(t.createdAt);
+    const now = new Date();
+
+    if (preset === "1M") {
+      const past30Days = new Date();
+      past30Days.setDate(past30Days.getDate() - 30);
+      return date >= past30Days;
+    }
+    if (preset === "1Y") {
+      const past1Yr = new Date();
+      past1Yr.setFullYear(past1Yr.getFullYear() - 1);
+      return date >= past1Yr;
+    }
+    if (preset === "5Y") {
+      const past5Yr = new Date();
+      past5Yr.setFullYear(past5Yr.getFullYear() - 5);
+      return date >= past5Yr;
+    }
+    if (preset === "10Y") {
+      const past10Yr = new Date();
+      past10Yr.setFullYear(past10Yr.getFullYear() - 10);
+      return date >= past10Yr;
+    }
+    if (preset === "CUSTOM") {
+      if (startDate && date < new Date(startDate)) return false;
+      if (endDate && date > new Date(endDate + "T23:59:59.999Z")) return false;
+      return true;
+    }
+    return true;
+  });
+
   // ── derived summary stats ────────────────────────────────
-  const successfulTxns = transactions.filter(
+  const successfulTxns = filteredTransactions.filter(
     (t) => t.status === "Success" || t.status === "paid" || t.status === "Paid"
   );
   const totalPaid = successfulTxns.reduce((sum, t) => sum + (t.amount || 0), 0);
-  const lastTxn = transactions[0] ?? null;
+  const lastTxn = filteredTransactions[0] ?? null;
 
   // ── download handler ─────────────────────────────────────
   const handleDownload = () => {
-    if (!transactions.length) {
+    if (!filteredTransactions.length) {
       toast.error("No transactions to download.");
       return;
     }
 
     const rows = [
       ["Description", "Transaction ID", "Category", "Date", "Amount", "Status", "Method"],
-      ...transactions.map((t) => [
+      ...filteredTransactions.map((t) => [
         t.description ?? "—",
         t.transactionId ?? "—",
         deriveCategory(t),
@@ -106,7 +145,7 @@ export default function PaymentHistory() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "payment-history.csv";
+    a.download = `payment-history-${preset}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success("Statement downloaded");
@@ -125,7 +164,9 @@ export default function PaymentHistory() {
               <p className="text-3xl font-bold text-slate-800">
                 {loading ? "—" : formatAmount(totalPaid)}
               </p>
-              <p className="text-xs text-green-600 font-medium mt-1">All time</p>
+              <p className="text-xs text-green-600 font-medium mt-1">
+                {preset === "ALL" ? "All time" : `Filtered (${preset})`}
+              </p>
             </div>
 
             <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-5">
@@ -133,7 +174,7 @@ export default function PaymentHistory() {
                 Transactions
               </p>
               <p className="text-3xl font-bold text-slate-800">
-                {loading ? "—" : transactions.length}
+                {loading ? "—" : filteredTransactions.length}
               </p>
               <p className="text-xs text-indigo-600 font-medium mt-1">
                 {loading ? "" : `${successfulTxns.length} successful`}
@@ -148,16 +189,70 @@ export default function PaymentHistory() {
                 {loading ? "—" : lastTxn ? formatAmount(lastTxn.amount) : "N/A"}
               </p>
               <p className="text-xs text-slate-500 font-medium mt-1">
-                {loading ? "" : lastTxn ? formatDate(lastTxn.createdAt) : "No payments yet"}
+                {loading ? "" : lastTxn ? formatDate(lastTxn.createdAt) : "No payments found"}
               </p>
             </div>
+          </div>
+
+          {/* ── Date Range Filter Bar ── */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 mr-2">
+                📅 Date Filter:
+              </span>
+              {[
+                { id: "ALL", label: "All Time" },
+                { id: "1M", label: "Last 1 Month" },
+                { id: "1Y", label: "Last 1 Year" },
+                { id: "5Y", label: "Last 5 Years" },
+                { id: "10Y", label: "Last 10 Years" },
+                { id: "CUSTOM", label: "Custom Range" },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setPreset(item.id)}
+                  className={`text-xs font-bold px-3 py-1.5 rounded-xl transition-all ${
+                    preset === item.id
+                      ? "bg-indigo-600 text-white shadow-sm shadow-indigo-200"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            {preset === "CUSTOM" && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="text-xs border border-slate-200 rounded-xl px-3 py-1.5 outline-none focus:border-indigo-500"
+                />
+                <span className="text-xs text-slate-400 font-bold">to</span>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="text-xs border border-slate-200 rounded-xl px-3 py-1.5 outline-none focus:border-indigo-500"
+                />
+              </div>
+            )}
+
+            <button
+              onClick={handleDownload}
+              className="text-xs font-bold text-indigo-600 bg-indigo-50 hover:bg-indigo-100 px-4 py-2 rounded-xl transition-all self-start md:self-auto"
+            >
+              📥 Download Statement CSV
+            </button>
           </div>
 
           {/* ── Transactions table ── */}
           <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                All Transactions
+                Transactions ({filteredTransactions.length})
               </h3>
             </div>
             
@@ -206,15 +301,15 @@ export default function PaymentHistory() {
                   Try again
                 </button>
               </div>
-            ) : transactions.length === 0 ? (
+            ) : filteredTransactions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
                 <span className="text-3xl">🧾</span>
-                <p className="text-sm font-semibold text-slate-700">No transactions yet</p>
-                <p className="text-xs text-slate-400">Your payment history will appear here.</p>
+                <p className="text-sm font-semibold text-slate-700">No transactions found</p>
+                <p className="text-xs text-slate-400">No records match the selected date range filter.</p>
               </div>
             ) : (
               <div className="flex flex-col divide-y divide-slate-100">
-                {transactions.map((txn) => {
+                {filteredTransactions.map((txn) => {
                   const category = deriveCategory(txn);
                   const icon = deriveIcon(txn);
 

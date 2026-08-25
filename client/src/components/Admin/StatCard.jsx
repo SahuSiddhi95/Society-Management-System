@@ -1,4 +1,6 @@
-export default function StatCards({ stats }) {
+export default function StatCards({ stats, timeRange = "ALL" }) {
+  const rangeLabel = timeRange === "ALL" ? "All Time" : timeRange === "THIS_MONTH" ? "This Month" : `Filtered: ${timeRange}`;
+
   const cards = [
     {
       icon: "🏢",
@@ -25,7 +27,7 @@ export default function StatCards({ stats }) {
       iconBg: "bg-green-100/50 text-green-600",
       value: `₹${(stats?.maintenanceCollected || 0).toLocaleString("en-IN")}`,
       label: "Maintenance Collected",
-      badge: "This Month",
+      badge: rangeLabel,
       badgeColor: "text-green-700 bg-green-100",
       bgGradient: "from-green-50 to-white",
       borderColor: "border-green-100",
@@ -41,6 +43,7 @@ export default function StatCards({ stats }) {
       borderColor: "border-red-100",
     },
   ];
+
 
   return (
     <div className="grid grid-cols-2 xl:grid-cols-4 gap-6">
